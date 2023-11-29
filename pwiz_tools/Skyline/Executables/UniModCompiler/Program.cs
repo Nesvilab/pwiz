@@ -186,8 +186,21 @@ namespace UniModCompiler
             Array.Sort(element, (el1, el2) => string.CompareOrdinal(el1.symbol, el2.symbol));
             Array.Sort(elementParent, (el1, el2) => string.CompareOrdinal(el1.symbol, el2.symbol));
             int i = 0, j = 0;
-            while (i < element.Length && j < elementParent.Length)
+            while (i < element.Length || j < elementParent.Length)
             {
+                if (i >= element.Length)
+                {
+                    listDiffRef.Add(new elem_ref_t { symbol = elementParent[j].symbol, number = (-int.Parse(elementParent[j].number)).ToString(CultureInfo.InvariantCulture) });
+                    j++;
+                    continue;
+                }
+                if (j >= elementParent.Length)
+                {
+                    listDiffRef.Add(new elem_ref_t { symbol = element[i].symbol, number = element[i].number });
+                    i++;
+                    continue;
+                }
+
                 var el = element[i];
                 int numEl = int.Parse(el.number, CultureInfo.InvariantCulture);
                 var elParent = elementParent[j];

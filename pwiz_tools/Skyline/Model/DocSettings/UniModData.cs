@@ -2264,12 +2264,6 @@ namespace pwiz.Skyline.Model.DocSettings
             },
             new UniModModificationData
             {
-                 Name = "Deamidated:18O(1) (NQ)", 
-                 AAs = "N, Q", LabelAtoms = LabelAtoms.None, Formula = "O' - HN", ID = 366, 
-                 Structural = true, ShortName = "DeO", Hidden = true, 
-            },
-            new UniModModificationData
-            {
                  Name = "Decanoyl (S)", 
                  AAs = "S", LabelAtoms = LabelAtoms.None, Formula = "H18C10O", ID = 449, 
                  Structural = true, ShortName = "Dec", Hidden = true, 
@@ -4463,42 +4457,6 @@ namespace pwiz.Skyline.Model.DocSettings
                  Name = "Dimethyl (R)", 
                  AAs = "R", LabelAtoms = LabelAtoms.None, Formula = "C2H4", ID = 36, 
                  Structural = true, ShortName = "2Me", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Dimethyl:2H(4) (K)", 
-                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'4C2", ID = 199, 
-                 Structural = true, ShortName = "DM4", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Dimethyl:2H(4) (N-term)", 
-                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "H'4C2", ID = 199, 
-                 Structural = true, ShortName = "DM4", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Dimethyl:2H(4) (R)", 
-                 AAs = "R", LabelAtoms = LabelAtoms.None, Formula = "H'4C2", ID = 199, 
-                 Structural = true, ShortName = "DM4", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Dimethyl:2H(4)13C(2) (K)", 
-                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "C'2H'4", ID = 510, 
-                 Structural = true, ShortName = "D6a", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Dimethyl:2H(4)13C(2) (N-term)", 
-                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "C'2H'4", ID = 510, 
-                 Structural = true, ShortName = "D6a", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Dimethyl:2H(4)13C(2) (R)", 
-                 AAs = "R", LabelAtoms = LabelAtoms.None, Formula = "C'2H'4", ID = 510, 
-                 Structural = true, ShortName = "D6a", Hidden = true, 
             },
             new UniModModificationData
             {
@@ -8222,18 +8180,6 @@ namespace pwiz.Skyline.Model.DocSettings
             },
             new UniModModificationData
             {
-                 Name = "Methyl:2H(2) (K)", 
-                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'2C", ID = 284, 
-                 Structural = true, ShortName = "M+2", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Methyl:2H(2) (N-term)", 
-                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "H'2C", ID = 284, 
-                 Structural = true, ShortName = "M+2", Hidden = true, 
-            },
-            new UniModModificationData
-            {
                  Name = "Methyl:2H(3)+Acetyl:2H(3) (K)", 
                  AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'6C3O - H2", ID = 1368, 
                  Structural = true, Hidden = true, 
@@ -9563,18 +9509,6 @@ namespace pwiz.Skyline.Model.DocSettings
                  Name = "Propyl (N-term)", 
                  Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "C3H6", ID = 1305, 
                  Structural = true, ShortName = "Prp", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Propyl:2H(6) (K)", 
-                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'6C3", ID = 1306, 
-                 Structural = true, ShortName = "Pr6", Hidden = true, 
-            },
-            new UniModModificationData
-            {
-                 Name = "Propyl:2H(6) (N-term)", 
-                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "H'6C3", ID = 1306, 
-                 Structural = true, ShortName = "Pr6", Hidden = true, 
             },
             new UniModModificationData
             {
@@ -10994,6 +10928,48 @@ namespace pwiz.Skyline.Model.DocSettings
             },
             new UniModModificationData
             {
+                 Name = "Deamidated:18O(1) (NQ)", 
+                 AAs = "N, Q", LabelAtoms = LabelAtoms.None, Formula = "O' - O", ID = 366, 
+                 Structural = false, ShortName = "DeO", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Dimethyl:2H(4) (K)", 
+                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'4 - H4", ID = 199, 
+                 Structural = false, ShortName = "DM4", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Dimethyl:2H(4) (N-term)", 
+                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "H'4 - H4", ID = 199, 
+                 Structural = false, ShortName = "DM4", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Dimethyl:2H(4) (R)", 
+                 AAs = "R", LabelAtoms = LabelAtoms.None, Formula = "H'4 - H4", ID = 199, 
+                 Structural = false, ShortName = "DM4", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Dimethyl:2H(4)13C(2) (K)", 
+                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "C'2H'4 - C2H4", ID = 510, 
+                 Structural = false, ShortName = "D6a", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Dimethyl:2H(4)13C(2) (N-term)", 
+                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "C'2H'4 - C2H4", ID = 510, 
+                 Structural = false, ShortName = "D6a", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Dimethyl:2H(4)13C(2) (R)", 
+                 AAs = "R", LabelAtoms = LabelAtoms.None, Formula = "C'2H'4 - C2H4", ID = 510, 
+                 Structural = false, ShortName = "D6a", Hidden = true, 
+            },
+            new UniModModificationData
+            {
                  Name = "Dimethyl:2H(6) (K)", 
                  AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'6 - H6", ID = 1291, 
                  Structural = false, ShortName = "DM6", Hidden = true, 
@@ -11498,6 +11474,18 @@ namespace pwiz.Skyline.Model.DocSettings
             },
             new UniModModificationData
             {
+                 Name = "Methyl:2H(2) (K)", 
+                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'2 - H2", ID = 284, 
+                 Structural = false, ShortName = "M+2", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Methyl:2H(2) (N-term)", 
+                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "H'2 - H2", ID = 284, 
+                 Structural = false, ShortName = "M+2", Hidden = true, 
+            },
+            new UniModModificationData
+            {
                  Name = "Methyl:2H(3) (C-term)", 
                  Terminus = ModTerminus.C, LabelAtoms = LabelAtoms.None, Formula = "H'3 - H3", ID = 298, 
                  Structural = false, ShortName = "M+3", Hidden = true, 
@@ -11603,6 +11591,18 @@ namespace pwiz.Skyline.Model.DocSettings
                  Name = "Propionyl:13C(3) (N-term)", 
                  Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "C'3 - C3", ID = 59, 
                  Structural = false, ShortName = "Po3", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Propyl:2H(6) (K)", 
+                 AAs = "K", LabelAtoms = LabelAtoms.None, Formula = "H'6 - H6", ID = 1306, 
+                 Structural = false, ShortName = "Pr6", Hidden = true, 
+            },
+            new UniModModificationData
+            {
+                 Name = "Propyl:2H(6) (N-term)", 
+                 Terminus = ModTerminus.N, LabelAtoms = LabelAtoms.None, Formula = "H'6 - H6", ID = 1306, 
+                 Structural = false, ShortName = "Pr6", Hidden = true, 
             },
             new UniModModificationData
             {
