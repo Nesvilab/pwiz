@@ -45,7 +45,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         private ImmutableList<ArdiaFolderObject> GetFoldersAndSequences(Uri requestUri)
         {
-            var httpClient = ArdiaAccount.GetAuthenticatedHttpClient();
+            using var httpClient = ArdiaAccount.GetAuthenticatedHttpClient();
             string responseBody = httpClient.GetAsync(requestUri).Result.Content.ReadAsStringAsync().Result;
             var jsonObject = JObject.Parse(responseBody);
 
@@ -61,7 +61,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         private ImmutableList<ArdiaFileObject> GetRawFiles(Uri requestUri)
         {
-            var httpClient = ArdiaAccount.GetAuthenticatedHttpClient();
+            using var httpClient = ArdiaAccount.GetAuthenticatedHttpClient();
             string responseBody = httpClient.GetAsync(requestUri).Result.Content.ReadAsStringAsync().Result;
             var jsonObject = JObject.Parse(responseBody);
 
