@@ -84,7 +84,7 @@ namespace pwiz.Skyline.Model.Results
         }
 
         public abstract MsDataFileImpl OpenMsDataFile(bool simAsSpectra, bool preferOnlyMs1,
-            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints);
+            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints, string downloadPath);
 
         public int CompareTo(object obj)
         {
@@ -289,7 +289,7 @@ namespace pwiz.Skyline.Model.Results
         }
 
         public override MsDataFileImpl OpenMsDataFile(bool simAsSpectra, bool preferOnlyMs1,
-            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints)
+            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints, string downloadPath)
         {
             Assume.IsFalse(LegacyCentroidMs1 || LegacyCentroidMs2 || LegacyCombineIonMobilitySpectra);  // Only for backward compatibility. We are not expecting to use this value to open MsDataFileImpl objects
             return new MsDataFileImpl(FilePath, Math.Max(SampleIndex, 0), LockMassParameters, simAsSpectra,

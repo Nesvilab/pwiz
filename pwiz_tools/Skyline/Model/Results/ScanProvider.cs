@@ -281,9 +281,11 @@ namespace pwiz.Skyline.Model.Results
                 }
                 else
                 {
+                    string docDir = Path.GetDirectoryName(DocFilePath) ?? Directory.GetCurrentDirectory();
                     dataFile = DataFilePath.OpenMsDataFile(simAsSpectra, preferOnlyMs1,
                         centroidedMs1 ?? _cachedFile?.UsedMs1Centroids ?? false, 
-                        centroidedMs2 ?? _cachedFile?.UsedMs2Centroids ?? false, ignoreZeroIntensityPoints);
+                        centroidedMs2 ?? _cachedFile?.UsedMs2Centroids ?? false, ignoreZeroIntensityPoints,
+                        docDir);
                 }
                 if (centroidedMs1 == null && centroidedMs2 == null)
                     _dataFile = dataFile;

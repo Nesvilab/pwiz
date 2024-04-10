@@ -63,7 +63,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Unifi
         }
 
         public override MsDataFileImpl OpenMsDataFile(bool simAsSpectra, bool preferOnlyMs1,
-            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints)
+            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints, string downloadPath)
         {
             var account = FindMatchingAccount(Settings.Default.RemoteAccountList) as UnifiAccount;
             if (account == null)

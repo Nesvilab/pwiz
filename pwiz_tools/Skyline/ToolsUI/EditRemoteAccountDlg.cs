@@ -26,6 +26,7 @@ using pwiz.Common.Collections;
 using pwiz.Skyline.Alerts;
 using pwiz.Skyline.Controls;
 using pwiz.Skyline.Model.Results.RemoteApi;
+using pwiz.Skyline.Model.Results.RemoteApi.Ardia;
 using pwiz.Skyline.Model.Results.RemoteApi.Unifi;
 using pwiz.Skyline.Util;
 using pwiz.Skyline.Util.Extensions;
@@ -52,12 +53,15 @@ namespace pwiz.Skyline.ToolsUI
             textUsername.Text = remoteAccount.Username;
             textPassword.Text = remoteAccount.Password;
             textServerURL.Text = remoteAccount.ServerUrl;
-            var unifiAccount = remoteAccount as UnifiAccount;
-            if (unifiAccount != null)
+            if (remoteAccount is UnifiAccount unifiAccount)
             {
                 tbxIdentityServer.Text = unifiAccount.IdentityServer;
                 tbxClientScope.Text = unifiAccount.ClientScope;
                 tbxClientSecret.Text = unifiAccount.ClientSecret;
+            }
+            else if (remoteAccount is ArdiaAccount ardiaAccount)
+            {
+                // CONSIDER: allow user to set role instead of picking first one
             }
         }
 
@@ -73,6 +77,11 @@ namespace pwiz.Skyline.ToolsUI
                     .ChangeClientScope(tbxClientScope.Text)
                     .ChangeClientSecret(tbxClientSecret.Text);
                 remoteAccount = unifiAccount;
+            }
+            else if (accountType == RemoteAccountType.ARDIA)
+            {
+                var ardiaAccount = (ArdiaAccount) remoteAccount;
+                remoteAccount = ardiaAccount;
             }
             return remoteAccount;
         }
@@ -103,12 +112,12 @@ namespace pwiz.Skyline.ToolsUI
                 return false;
             }
             var account = GetRemoteAccount();
-            var unifiAccount = account as UnifiAccount;
-            if (unifiAccount != null)
+            return account switch
             {
-                return TestUnifiAccount(unifiAccount);
-            }
-            return true;
+                UnifiAccount unifiAccount => TestUnifiAccount(unifiAccount),
+                ArdiaAccount ardiaAccount => TestArdiaAccount(ardiaAccount),
+                _ => true
+            };
         }
 
         private bool TestUnifiAccount(UnifiAccount unifiAccount)
@@ -147,59 +156,86 @@ namespace pwiz.Skyline.ToolsUI
                     tbxIdentityServer.Focus();
                     return false;
                 }
-                bool[] contentsAvailable = new bool[1];
-                unifiSession.ContentsAvailable += () =>
+
+                return TestAccount(unifiSession);
+            } 
+        }
+
+        private bool TestArdiaAccount(ArdiaAccount ardiaAccount)
+        {
+            using (var ardiaSession = new ArdiaSession(ardiaAccount))
+            {
+                try
                 {
-                    lock (contentsAvailable)
-                    {
-                        contentsAvailable[0] = true;
-                        Monitor.Pulse(contentsAvailable);
-                    }
-                };
-                using (var longWaitDlg = new LongWaitDlg())
+                    ardiaAccount.GetAuthenticatedHttpClient();
+                }
+                catch (Exception e)
                 {
-                    try
+                    MessageDlg.ShowWithException(this, ToolsUIResources.EditRemoteAccountDlg_TestUnifiAccount_An_error_occurred_while_trying_to_authenticate_, e);
+                    tbxIdentityServer.Focus();
+                    return false;
+                }
+
+                return TestAccount(ardiaSession);
+            }
+        }
+
+        private bool TestAccount(RemoteSession session)
+        {
+            
+            bool[] contentsAvailable = new bool[1];
+            session.ContentsAvailable += () =>
+            {
+                lock (contentsAvailable)
+                {
+                    contentsAvailable[0] = true;
+                    Monitor.Pulse(contentsAvailable);
+                }
+            };
+            using (var longWaitDlg = new LongWaitDlg())
+            {
+                try
+                {
+                    longWaitDlg.PerformWork(this, 1000, (ILongWaitBroker broker) =>
                     {
-                        longWaitDlg.PerformWork(this, 1000, (ILongWaitBroker broker) =>
+                        while (!broker.IsCanceled)
                         {
-                            while (!broker.IsCanceled)
+                            RemoteServerException remoteServerException;
+                            if (session.AsyncFetchContents(session.Account.GetRootUrl(),
+                                out remoteServerException))
                             {
-                                RemoteServerException remoteServerException;
-                                if (unifiSession.AsyncFetchContents(unifiAccount.GetRootUrl(),
-                                    out remoteServerException))
+                                if (remoteServerException != null)
                                 {
-                                    if (remoteServerException != null)
-                                    {
-                                        throw remoteServerException;
-                                    }
-                                    break;
+                                    throw remoteServerException;
                                 }
-                                lock (contentsAvailable)
+                                break;
+                            }
+                            lock (contentsAvailable)
+                            {
+                                while (!contentsAvailable[0] && !broker.IsCanceled)
                                 {
-                                    while (!contentsAvailable[0] && !broker.IsCanceled)
-                                    {
-                                        Monitor.Wait(contentsAvailable, 10);
-                                    }
+                                    Monitor.Wait(contentsAvailable, 10);
                                 }
                             }
-                        });
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        return false;
-                    }
-                    catch (Exception e)
-                    {
-                        MessageDlg.ShowWithException(this, ToolsUIResources.EditRemoteAccountDlg_TestUnifiAccount_An_exception_occurred_while_trying_to_fetch_the_directory_listing_, e);
-                        textServerURL.Focus();
-                        return false;
-                    }
-                    if (longWaitDlg.IsCanceled)
-                    {
-                        return false;
-                    }
+                        }
+                    });
                 }
-            } 
+                catch (OperationCanceledException)
+                {
+                    return false;
+                }
+                catch (Exception e)
+                {
+                    MessageDlg.ShowWithException(this, ToolsUIResources.EditRemoteAccountDlg_TestUnifiAccount_An_exception_occurred_while_trying_to_fetch_the_directory_listing_, e);
+                    textServerURL.Focus();
+                    return false;
+                }
+                if (longWaitDlg.IsCanceled)
+                {
+                    return false;
+                }
+            }
+
             MessageDlg.Show(this, ToolsUIResources.EditRemoteAccountDlg_TestSettings_Settings_are_correct);
             return true;
         }

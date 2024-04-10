@@ -192,8 +192,9 @@ namespace pwiz.Skyline.Model.Results
                         bool centroidMs1 = fullScan.IsCentroidedMs;
                         bool centroidMs2 = fullScan.IsCentroidedMsMs;
                         const bool ignoreZeroIntensityPoints = true; // Omit zero intensity points during extraction
+                        string docDir = Path.GetDirectoryName(CachePath) ?? Directory.GetCurrentDirectory();
                         inFile = MSDataFilePath.OpenMsDataFile(enableSimSpectrum, preferOnlyMs1,
-                            centroidMs1, centroidMs2, ignoreZeroIntensityPoints);
+                            centroidMs1, centroidMs2, ignoreZeroIntensityPoints, docDir);
                     }
 
                     // Check for cancellation

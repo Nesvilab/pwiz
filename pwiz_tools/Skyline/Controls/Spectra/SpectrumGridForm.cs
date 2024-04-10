@@ -602,7 +602,9 @@ namespace pwiz.Skyline.Controls.Spectra
             {
                 string message = string.Format(SpectraResources.SpectrumReader_ReadSpectraFromFile_Reading_spectra_from__0_, file.GetFileName());
                 CommonActionUtil.SafeBeginInvoke(_form, () => _form.UpdateProgress(message, 0, file));
-                using (var msDataFile = file.OpenMsDataFile(true, false, false, false, true))
+
+                string docDir = Path.GetDirectoryName(_form.SkylineWindow.DocumentFilePath) ?? Directory.GetCurrentDirectory();
+                using (var msDataFile = file.OpenMsDataFile(true, false, false, false, true, docDir))
                 {
                     var spectra = new List<SpectrumMetadata>();
                     int spectrumCount = msDataFile.SpectrumCount;
