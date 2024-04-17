@@ -1039,7 +1039,7 @@ namespace pwiz.Skyline.Model.Serialization
             }
             Assume.IsTrue(DocumentMayContainMoleculesWithEmbeddedIons || adduct.IsEmpty); // Shouldn't be any charge info at the peptide/molecule level
             var peptide = isCustomMolecule ?
-                new Peptide(customMolecule, chromatogramTarget) :
+                new Peptide(customMolecule) :
                 new Peptide(group as FastaSequence, sequence, start, end, missedCleavages, isDecoy);
             if (reader.IsEmptyElement)
                 reader.Read();
@@ -1100,7 +1100,8 @@ namespace pwiz.Skyline.Model.Serialization
                 .ChangeInternalStandardConcentration(internalStandardConcentration)
                 .ChangeNormalizationMethod(NormalizationMethod.FromName(normalizationMethod))
                 .ChangeAttributeGroupId(attributeGroupId)
-                .ChangeSurrogateCalibrationCurve(surrogateCalibrationCurve);
+                .ChangeSurrogateCalibrationCurve(surrogateCalibrationCurve)
+                .ChangeOriginalMoleculeTarget(chromatogramTarget);
 
             return peptideDocNode;
         }
