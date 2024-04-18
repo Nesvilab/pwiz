@@ -68,7 +68,7 @@ namespace pwiz.Skyline.ToolsUI
         public RemoteAccount GetRemoteAccount()
         {
             var accountType = (RemoteAccountType) comboAccountType.SelectedItem;
-            var remoteAccount = accountType.GetEmptyAccount().ChangeServerUrl(textServerURL.Text.Trim())
+            var remoteAccount = accountType.GetEmptyAccount().ChangeServerUrl(textServerURL.Text.Trim().TrimEnd('/'))
                 .ChangeUsername(textUsername.Text.Trim()).ChangePassword(textPassword.Text);
             if (accountType == RemoteAccountType.UNIFI)
             {
@@ -243,12 +243,12 @@ namespace pwiz.Skyline.ToolsUI
         private bool ValidateValues()
         {
             var remoteAccount = GetRemoteAccount();
-            if (string.IsNullOrEmpty(remoteAccount.Username))
+            /*if (string.IsNullOrEmpty(remoteAccount.Username))
             {
                 MessageDlg.Show(this, ToolsUIResources.EditRemoteAccountDlg_ValidateValues_Username_cannot_be_blank);
                 textUsername.Focus();
                 return false;
-            }
+            }*/
             if (string.IsNullOrEmpty(remoteAccount.ServerUrl))
             {
                 MessageDlg.Show(this, ToolsUIResources.EditRemoteAccountDlg_ValidateValues_Server_cannot_be_blank);

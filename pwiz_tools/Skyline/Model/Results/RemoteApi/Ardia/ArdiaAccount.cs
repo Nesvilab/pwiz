@@ -32,29 +32,28 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
         public ArdiaAccount(string serverUrl, string username, string password)
         {
             ServerUrl = serverUrl;
-            _rootUrl = (ArdiaUrl) ArdiaUrl.Empty.ChangeServerUrl(ServerUrl).ChangeUsername(Username);
         }
 
         public string GetFolderContentsUrl(ArdiaUrl ardiaUrl)
         {
             if (ardiaUrl.SequenceKey != null)
-                return _rootUrl.SequenceBaseUrl + ardiaUrl.SequenceKey;
+                return GetRootArdiaUrl().SequenceBaseUrl + ardiaUrl.SequenceKey;
             else if (ardiaUrl.EncodedPath != null)
-                return _rootUrl.NavigationBaseUrl + $@"/path?itemPath=/{ardiaUrl.EncodedPath}";
-            return _rootUrl.NavigationBaseUrl;
+                return GetRootArdiaUrl().NavigationBaseUrl + $@"/path?itemPath=/{ardiaUrl.EncodedPath}";
+            return GetRootArdiaUrl().NavigationBaseUrl;
         }
 
         public string GetFolderContentsUrl(string folder = "")
         {
-            return _rootUrl.NavigationBaseUrl + ((folder?.TrimStart('/')).IsNullOrEmpty() ? "" : $@"/path?itemPath={folder}");
+            return GetRootArdiaUrl().NavigationBaseUrl + ((folder?.TrimStart('/')).IsNullOrEmpty() ? "" : $@"/path?itemPath={folder}");
         }
 
         public string GetPathFromFolderContentsUrl(string folderUrl)
         {
-            return folderUrl.Replace(_rootUrl.NavigationBaseUrl, "").Replace(_rootUrl.ServerUrl, "").Replace(@"/path?itemPath=", "").TrimEnd('/');
+            var rootUrl = GetRootArdiaUrl();
+            return folderUrl.Replace(rootUrl.NavigationBaseUrl, "").Replace(rootUrl.ServerUrl, "").Replace(@"/path?itemPath=", "").TrimEnd('/');
         }
 
-        private ArdiaUrl _rootUrl;
         private Func<HttpClient> _authenticatedHttpClientFactory;
 
         public HttpClient GetAuthenticatedHttpClient()
@@ -83,7 +82,6 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return ChangeProp(ImClone(this), im =>
             {
                 im.ServerUrl = serverUrl;
-                im._rootUrl = (ArdiaUrl) _rootUrl.ChangeServerUrl(serverUrl);
             });
         }
 
@@ -92,13 +90,17 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return ChangeProp(ImClone(this), im =>
             {
                 im.Username = username;
-                im._rootUrl = (ArdiaUrl) _rootUrl.ChangeUsername(username);
             });
+        }
+
+        public ArdiaUrl GetRootArdiaUrl()
+        {
+            return (ArdiaUrl) ArdiaUrl.Empty.ChangeServerUrl(ServerUrl).ChangeUsername(Username);
         }
 
         public override RemoteUrl GetRootUrl()
         {
-            return _rootUrl;
+            return GetRootArdiaUrl();
         }
 
         private ArdiaAccount()
@@ -111,25 +113,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         protected bool Equals(ArdiaAccount other)
         {
-            return base.Equals(other) && _rootUrl.Equals(other._rootUrl);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((ArdiaAccount) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                int hashCode = base.GetHashCode();
-                hashCode = (hashCode * 397) ^ (_rootUrl != null ? _rootUrl.GetHashCode() : 0);
-                return hashCode;
-            }
+            return base.Equals(other);
         }
     }
 }

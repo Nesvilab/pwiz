@@ -144,7 +144,7 @@ namespace pwiz.Skyline.Alerts
             return null;
         }
 
-        private async void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
+        private async Task CheckForBffHostCookie()
         {
             // Get the list of cookies from the webview
             var cookies = await webView.CoreWebView2.CookieManager.GetCookiesAsync(Account.ServerUrl);
@@ -163,8 +163,15 @@ namespace pwiz.Skyline.Alerts
             }
         }
 
+        private async void CoreWebView2_NavigationStarting(object sender, CoreWebView2NavigationStartingEventArgs e)
+        {
+            await CheckForBffHostCookie();
+        }
+
         private async void CoreWebView2_NavigationCompleted(object sender, CoreWebView2DOMContentLoadedEventArgs e)
         {
+            await CheckForBffHostCookie();
+
             const string usernameSelector = "document.querySelector(\"#applogin\").shadowRoot.querySelector(\"#username\")";
             const string passwordSelector = "document.querySelector(\"#applogin\").shadowRoot.querySelector(\"#password\")";
             const string signinSelector = "document.querySelector(\"#applogin\").shadowRoot.querySelector(\"#signin\")";
@@ -183,23 +190,33 @@ namespace pwiz.Skyline.Alerts
             if (buttonText == null)
                 return;
 
-            if (buttonText == @"Continue" && Account.Username.Any())
+            if (buttonText == @"Continue")
             {
-                await ExecuteScriptAsync(usernameSelector + @".value=" + Account.Username.Quote());
-                await ExecuteScriptAsync(usernameSelector + triggerInputEvent);
+                if (Account.Username.Any())
+                {
+                    await ExecuteScriptAsync(usernameSelector + @".value=" + Account.Username.Quote());
+                    await ExecuteScriptAsync(usernameSelector + triggerInputEvent);
+                }
 
                 // start listening again
                 webView.CoreWebView2.DOMContentLoaded += CoreWebView2_NavigationCompleted;
-                await ExecuteScriptAsync(signinSelector + @".click()");
+
+                if (Account.Username.Any())
+                    await ExecuteScriptAsync(signinSelector + @".click()");
             }
-            else if (buttonText == @"Sign In" && Account.Password.Any())
+            else if (buttonText == @"Sign In")
             {
-                await ExecuteScriptAsync(passwordSelector + @".value=" + Account.Password.Quote());
-                await ExecuteScriptAsync(passwordSelector + triggerInputEvent);
+                if (Account.Password.Any())
+                {
+                    await ExecuteScriptAsync(passwordSelector + @".value=" + Account.Password.Quote());
+                    await ExecuteScriptAsync(passwordSelector + triggerInputEvent);
+                }
 
                 // start listening again
                 webView.CoreWebView2.DOMContentLoaded += CoreWebView2_NavigationCompleted;
-                await ExecuteScriptAsync(signinSelector + @".click()");
+
+                if (Account.Password.Any())
+                    await ExecuteScriptAsync(signinSelector + @".click()");
             }
             else if (buttonText == @"Next") // select role
             {

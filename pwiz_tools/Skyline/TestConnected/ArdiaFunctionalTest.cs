@@ -17,6 +17,7 @@
  */
 
 using System;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using pwiz.Common.Collections;
@@ -111,7 +112,13 @@ namespace pwiz.SkylineTestConnected
                 //OpenFile(openDataSourceDialog, "Reserpine_10 pg_µL_2_08", "Uracil_Caffeine(Water)_Inj_Det_2_04");
                 OpenFile(openDataSourceDialog, "Reserpine_10 pg_µL_2_08");
                 WaitForDocumentLoaded();
+                WaitForClosedAllChromatogramsGraph();
                 RunUI(() => SkylineWindow.SelectElement(ElementRefs.FromObjectReference(ElementLocator.Parse("Molecule:/Molecules/Reserpine"))));
+
+                // delete local RAW file to test that it gets redownloaded when clicking on the chromatogram to view a spectrum
+                string rawFilepath = TestFilesDir.GetTestPath("Reserpine_10 pg_µL_2_08.raw");
+                File.Delete(rawFilepath);
+
                 ClickChromatogram(0.5, 33000);
                 GraphFullScan graphFullScan = FindOpenForm<GraphFullScan>();
                 Assert.IsNotNull(graphFullScan);
