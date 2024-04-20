@@ -1985,6 +1985,11 @@ namespace pwiz.Skyline.Model.Results
             });
         }
 
+        public ChromKey ChangeCollisionEnergy(float collisionEnergy)
+        {
+            return ChangeProp(ImClone(this), im => im.CollisionEnergy = collisionEnergy);
+        }
+
         /// <summary>
         /// For debugging only
         /// </summary>
