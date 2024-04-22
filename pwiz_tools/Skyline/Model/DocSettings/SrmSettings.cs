@@ -2110,6 +2110,14 @@ namespace pwiz.Skyline.Model.DocSettings
                 Equals(chromatogramGroupInfo.FilePath, dataFilePath));
         }
 
+        public bool HasMultiplexMatrix
+        {
+            get
+            {
+                return PeptideSettings.Quantification.MultiplexMatrix?.Replicates.Count > 0;
+            }
+        }
+
         #region Implementation of IXmlSerializable
 
         /// <summary>

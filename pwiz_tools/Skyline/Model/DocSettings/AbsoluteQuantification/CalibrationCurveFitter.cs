@@ -878,7 +878,7 @@ namespace pwiz.Skyline.Model.DocSettings.AbsoluteQuantification
 
         public static bool AnyBatchNames(SrmSettings srmSettings)
         {
-            if (srmSettings.PeptideSettings.Quantification.MultiplexMatrix?.Replicates.Count > 0)
+            if (srmSettings.HasMultiplexMatrix)
             {
                 return true;
             }

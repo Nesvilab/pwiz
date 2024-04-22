@@ -40,7 +40,7 @@ namespace pwiz.Skyline.Model.Results
             if (Settings.Default.DeconvoluteChromatograms)
             {
                 result = result.ChangeDeconvolute(true);
-                if (settings.PeptideSettings.Quantification.MultiplexMatrix?.Replicates.Count > 0)
+                if (settings.HasMultiplexMatrix)
                 {
                     result = result.ChangeMultiplexMatrix(settings.PeptideSettings.Quantification.MultiplexMatrix);
                 }

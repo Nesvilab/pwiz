@@ -54,9 +54,9 @@ namespace pwiz.Skyline.Model.GroupComparison
                 return Enumerable.Empty<ReplicateId>();
             }
             var measuredResults = settings.MeasuredResults;
-            var multiplexMatrix = settings.PeptideSettings.Quantification.MultiplexMatrix;
-            if (multiplexMatrix?.Replicates.Count > 0)
+            if (settings.HasMultiplexMatrix)
             {
+                var multiplexMatrix = settings.PeptideSettings.Quantification.MultiplexMatrix;
                 return Enumerable.Range(0, measuredResults.Chromatograms.Count).SelectMany(replicateIndex =>
                     multiplexMatrix.Replicates.Select(replicate => new ReplicateId(replicateIndex, replicate.Name)));
             }

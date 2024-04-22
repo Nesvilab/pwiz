@@ -394,6 +394,7 @@ namespace pwiz.Skyline.Controls.Databinding
         // ReSharper disable LocalizableElement
         public static ViewInfo GetDefaultViewInfo(ColumnDescriptor columnDescriptor)
         {
+            var document = ((SkylineDataSchema)columnDescriptor.DataSchema).Document;
             ViewSpec viewSpec = GetDefaultViewSpec(columnDescriptor);
             bool addAnnotations = false;
             if (columnDescriptor.PropertyType == typeof (TransitionResult))
@@ -588,14 +589,28 @@ namespace pwiz.Skyline.Controls.Databinding
                 }
                 else if (columnDescriptor.PropertyType == typeof(Replicate))
                 {
-                    columnsToRemove.Add(PropertyPath.Root.Property("Name"));
-                    columnsToRemove.Add(PropertyPath.Root.Property("SampleDilutionFactor"));
-                    columnsToRemove.Add(PropertyPath.Root.Property(nameof(Replicate.BatchName)));
-                    addRoot = true;
+                    var columns = new List<ColumnSpec>
+                    {
+                        new ColumnSpec(PropertyPath.Root),
+                    };
+                    if (document.Settings.HasMultiplexMatrix)
+                    {
+                        columns.Add(new ColumnSpec(PropertyPath.Root.Property(nameof(Replicate.Name))));
+                        columns.Add(new ColumnSpec(PropertyPath.Root.Property(nameof(Replicate.MultiplexName))));
+                    }
+                    // if (false != document.MeasuredResults?.Chromatograms.All(chromatogramSet => chromatogramSet.FileCount == 1))
+                    // {
+                    //     columns.Add(new ColumnSpec(PropertyPath.Root.Property(nameof(Replicate.Files)).LookupAllItems()
+                    //         .Property(nameof(ResultFile.FileName))));
+                    // }
+
+                    columns.Add(new ColumnSpec(PropertyPath.Root.Property(nameof(Replicate.SampleType))));
+                    columns.Add(new ColumnSpec(PropertyPath.Root.Property(nameof(Replicate.AnalyteConcentration))));
+                    viewSpec = viewSpec.SetColumns(columns);
+                    addAnnotations = true;
                 }
                 else if (columnDescriptor.PropertyType == typeof(ResultFile))
                 {
-                    var document = ((SkylineDataSchema)columnDescriptor.DataSchema).Document;
                     var columns = new List<ColumnSpec>
                     {
                         new ColumnSpec(PropertyPath.Root.Property(nameof(ResultFile.FileName))),

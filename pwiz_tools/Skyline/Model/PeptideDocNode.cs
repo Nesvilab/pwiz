@@ -1791,12 +1791,11 @@ namespace pwiz.Skyline.Model
 
             public ImmutableList<float> CalculateMultiplexAreas()
             {
-                var multiplexMatrix = Settings.PeptideSettings.Quantification.MultiplexMatrix;
-                if (multiplexMatrix == null || multiplexMatrix.Replicates.Count == 0)
+                if (!Settings.HasMultiplexMatrix)
                 {
                     return null;
                 }
-
+                var multiplexMatrix = Settings.PeptideSettings.Quantification.MultiplexMatrix;
                 var reporterIonAreas = ReporterIonAreas
                     .GroupBy(entry => entry.Key, entry => (double)entry.Value)
                     .ToDictionary(group => group.Key, group => group.Sum());

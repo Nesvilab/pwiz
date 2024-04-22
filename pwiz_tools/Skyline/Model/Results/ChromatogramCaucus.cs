@@ -26,13 +26,12 @@ namespace pwiz.Skyline.Model.Results
         {
             get
             {
-                var multiplexMatrix = Document.Settings.PeptideSettings.Quantification.MultiplexMatrix;
-                if (multiplexMatrix == null || multiplexMatrix.Replicates.Count < 1)
+                if (Document.Settings.HasMultiplexMatrix)
                 {
-                    return null;
+                    return Document.Settings.PeptideSettings.Quantification.MultiplexMatrix;
                 }
 
-                return multiplexMatrix;
+                return null;
             }
         }
 

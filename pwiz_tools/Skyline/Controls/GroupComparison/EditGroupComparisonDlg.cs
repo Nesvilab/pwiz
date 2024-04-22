@@ -447,7 +447,7 @@ namespace pwiz.Skyline.Controls.GroupComparison
             var annotationDef = newSettings.DataSettings.AnnotationDefs.FirstOrDefault(
                 def => def.Name == GroupComparisonDef.ControlAnnotation);
             IList<string> multiplexNames;
-            if (newSettings.PeptideSettings.Quantification.MultiplexMatrix?.Replicates.Count > 0)
+            if (newSettings.HasMultiplexMatrix)
             {
                 multiplexNames =
                     newSettings.PeptideSettings.Quantification.MultiplexMatrix.Replicates.Select(replicate =>
