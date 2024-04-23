@@ -86,7 +86,7 @@ namespace TestPerf
 
             TestFilesZipPaths = new[]
             {
-                @"http://skyline.ms/tutorials/PRM-OrbiRAW.zip",
+                @"http://skyline.ms/tutorials/PRM-OrbiRaw.zip",
                 @"TestPerf\OrbiPrmViews.zip",
             };
 
