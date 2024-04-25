@@ -61,7 +61,7 @@ namespace pwiz.Skyline.ToolsUI
             }
             else if (remoteAccount is ArdiaAccount ardiaAccount)
             {
-                // CONSIDER: allow user to set role instead of picking first one
+                tbxRole.Text = ardiaAccount.Role;
             }
         }
 
@@ -81,6 +81,7 @@ namespace pwiz.Skyline.ToolsUI
             else if (accountType == RemoteAccountType.ARDIA)
             {
                 var ardiaAccount = (ArdiaAccount) remoteAccount;
+                ardiaAccount = ardiaAccount.ChangeRole(tbxRole.Text);
                 remoteAccount = ardiaAccount;
             }
             return remoteAccount;
@@ -293,6 +294,14 @@ namespace pwiz.Skyline.ToolsUI
         private void comboAccountType_SelectedIndexChanged(object sender, EventArgs e)
         {
             groupBoxUnifi.Visible = RemoteAccountType.UNIFI.Equals(AccountType);
+            pnlArdiaSettings.Visible = RemoteAccountType.ARDIA.Equals(AccountType);
+        }
+
+        private void flowLayoutPanel_Resize(object sender, EventArgs e)
+        {
+            pnlCommonSettings.Width = flowLayoutPanel.Width - flowLayoutPanel.Padding.Left * 2;
+            pnlArdiaSettings.Width = flowLayoutPanel.Width - flowLayoutPanel.Padding.Left * 2;
+            groupBoxUnifi.Width = flowLayoutPanel.Width - flowLayoutPanel.Padding.Left * 2;
         }
     }
 }

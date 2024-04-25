@@ -89,7 +89,7 @@ namespace pwiz.SkylineTestConnected
             // restore cookie if it was preserved in TestMethod
             if (!_saveCookie.IsNullOrEmpty())
             {
-                Settings.Default.LastArdiaLoginCookieValue = _saveCookie;
+                //Settings.Default.LastArdiaLoginCookieValue = _saveCookie;
                 Settings.Default.Save();
             }
 
@@ -108,16 +108,19 @@ namespace pwiz.SkylineTestConnected
                 OkDialog(editAccountDlg, editAccountDlg.OkDialog);
                 OpenFile(openDataSourceDialog, "Skyline");
                 OpenFile(openDataSourceDialog, "Small Files");
-                // TODO: figure out why importing two files at once makes the chromatograms not show up until closing and reopening the document
-                //OpenFile(openDataSourceDialog, "Reserpine_10 pg_µL_2_08", "Uracil_Caffeine(Water)_Inj_Det_2_04");
-                OpenFile(openDataSourceDialog, "Reserpine_10 pg_µL_2_08");
+                OpenFile(openDataSourceDialog, "Reserpine_10 pg_µL_2_08", "Uracil_Caffeine(Water)_Inj_Det_2_04");
                 WaitForDocumentLoaded();
                 WaitForClosedAllChromatogramsGraph();
-                RunUI(() => SkylineWindow.SelectElement(ElementRefs.FromObjectReference(ElementLocator.Parse("Molecule:/Molecules/Reserpine"))));
+
+                RunUI(() => SkylineWindow.SaveDocument());
+                RunUI(() => SkylineWindow.OpenFile(TestFilesDir.GetTestPath("small.sky")));
 
                 // delete local RAW file to test that it gets redownloaded when clicking on the chromatogram to view a spectrum
                 string rawFilepath = TestFilesDir.GetTestPath("Reserpine_10 pg_µL_2_08.raw");
                 File.Delete(rawFilepath);
+
+                WaitForDocumentLoaded();
+                RunUI(() => SkylineWindow.SelectElement(ElementRefs.FromObjectReference(ElementLocator.Parse("Molecule:/Molecules/Reserpine"))));
 
                 ClickChromatogram(0.5, 33000);
                 GraphFullScan graphFullScan = FindOpenForm<GraphFullScan>();

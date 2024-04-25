@@ -18,9 +18,11 @@
 using System;
 using System.Net.Http;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using pwiz.Common.Collections;
 using pwiz.Skyline.Util;
+using pwiz.Skyline.Util.Extensions;
 
 namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 {
@@ -28,6 +30,8 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
     public class ArdiaAccount : RemoteAccount
     {
         public static readonly ArdiaAccount DEFAULT = new ArdiaAccount(string.Empty, string.Empty, string.Empty);
+
+        public string Role { get; private set; }
 
         public ArdiaAccount(string serverUrl, string username, string password)
         {
@@ -54,6 +58,23 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return folderUrl.Replace(rootUrl.NavigationBaseUrl, "").Replace(rootUrl.ServerUrl, "").Replace(@"/path?itemPath=", "").TrimEnd('/');
         }
 
+        private enum ATTR
+        {
+            role
+        }
+
+        protected override void ReadXElement(XElement xElement)
+        {
+            base.ReadXElement(xElement);
+            Role = (string) xElement.Attribute(ATTR.role.ToString());
+        }
+
+        public override void WriteXml(XmlWriter writer)
+        {
+            base.WriteXml(writer);
+            writer.WriteAttributeIfString(ATTR.role, Role);
+        }
+
         private Func<HttpClient> _authenticatedHttpClientFactory;
 
         public HttpClient GetAuthenticatedHttpClient()
@@ -77,20 +98,9 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return new ArdiaSession(this);
         }
 
-        public override RemoteAccount ChangeServerUrl(string serverUrl)
+        public ArdiaAccount ChangeRole(string role)
         {
-            return ChangeProp(ImClone(this), im =>
-            {
-                im.ServerUrl = serverUrl;
-            });
-        }
-
-        public override RemoteAccount ChangeUsername(string username)
-        {
-            return ChangeProp(ImClone(this), im =>
-            {
-                im.Username = username;
-            });
+            return ChangeProp(ImClone(this), im => im.Role = role);
         }
 
         public ArdiaUrl GetRootArdiaUrl()
@@ -113,7 +123,17 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         protected bool Equals(ArdiaAccount other)
         {
-            return base.Equals(other);
+            return base.Equals(other) && Equals(Role, other.Role);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = base.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Role?.GetHashCode() ?? 0);
+                return hashCode;
+            }
         }
     }
 }

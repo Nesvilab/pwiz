@@ -20,6 +20,7 @@ using System;
 using System.IO;
 using pwiz.Common.SystemUtil;
 using pwiz.ProteowizardWrapper;
+using pwiz.Skyline.Model.Results.RemoteApi.Ardia;
 using pwiz.Skyline.Model.Results.RemoteApi.Unifi;
 using pwiz.Skyline.Util;
 
@@ -78,6 +79,10 @@ namespace pwiz.Skyline.Model.Results
             if (url.StartsWith(UnifiUrl.UrlPrefix))
             {
                 return new UnifiUrl(url);
+            }
+            if (url.StartsWith(ArdiaUrl.UrlPrefix))
+            {
+                return new ArdiaUrl(url);
             }
 
             return MsDataFilePath.ParseUri(url);

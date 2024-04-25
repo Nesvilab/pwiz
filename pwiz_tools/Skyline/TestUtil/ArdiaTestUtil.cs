@@ -30,12 +30,14 @@ namespace pwiz.SkylineTestUtil
 
         public static ArdiaAccount GetTestAccount()
         {
+            //return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeServerUrl(_baseUrl).ChangeUsername("kajo.nagyeri@gmail.com").ChangePassword("Thermo@123");
+
             var password = Environment.GetEnvironmentVariable("ARDIA_PASSWORD");
             if (string.IsNullOrWhiteSpace(password))
             {
                 return null;
             }
-            return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeServerUrl(_baseUrl).ChangeUsername("matt.chambers42@gmail.com")
+            return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeRole("Tester").ChangeServerUrl(_baseUrl).ChangeUsername("matt.chambers42@gmail.com")
                 .ChangePassword(password);
 
         }

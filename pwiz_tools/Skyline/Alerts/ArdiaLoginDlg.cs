@@ -127,7 +127,9 @@ namespace pwiz.Skyline.Alerts
                 return null;
             }
 
-            result.TryGetResultAsString(out var resultStr, out int _);
+            result.TryGetResultAsString(out var resultStr, out int isString);
+            if (isString == 0)
+                resultStr = result.ResultAsJson;
             return resultStr;
         }
 
@@ -160,6 +162,7 @@ namespace pwiz.Skyline.Alerts
 
                 webView.CoreWebView2.Environment.BrowserProcessExited += (s, ea) => DialogResult = DialogResult.OK;
                 webView.Dispose();
+                webView = null;
             }
         }
 
@@ -177,6 +180,9 @@ namespace pwiz.Skyline.Alerts
             const string signinSelector = "document.querySelector(\"#applogin\").shadowRoot.querySelector(\"#signin\")";
             const string nextSelector = "document.querySelector(\"#selectRole\").shadowRoot.querySelector(\"#signin\")";
             const string triggerInputEvent = ".dispatchEvent(new Event('input', { bubbles: true }));";
+
+            if (webView == null)
+                return;
 
             string location = webView.Source.AbsolutePath.ToLower();
             if (!location.EndsWith(@"/login") && !location.EndsWith(@"/roleselection"))
@@ -220,15 +226,34 @@ namespace pwiz.Skyline.Alerts
             }
             else if (buttonText == @"Next") // select role
             {
-                const string clickDropDownBox = "document.querySelector(\"#selectRole\").shadowRoot.querySelector(\"#roleSelection\").shadowRoot.firstChild.click()";
-                const string selectPopper = "document.querySelector(\"body > tf-popper\")";
-                const string selectFirstRole = "document.querySelector(\"body > tf-popper > div\").shadowRoot.querySelector(\"div > tf-dropdown-item:nth-child(1)\").click()";
-                await ExecuteScriptAsyncUntil(clickDropDownBox, async s => await ExecuteScriptAsync(selectPopper) != @"null");
-                await ExecuteScriptAsync(selectFirstRole);
+                if (Account.Role.Any())
+                {
+                    const string clickDropDownBox = "document.querySelector(\"#selectRole\").shadowRoot.querySelector(\"#roleSelection\").shadowRoot.firstChild.click()";
+                    const string selectPopper = "document.querySelector(\"body > tf-popper\")";
+                    //const string selectFirstRole = "document.querySelector(\"body > tf-popper > div\").shadowRoot.querySelector(\"div > tf-dropdown-item:nth-child(1)\").click()";
+                    string roleNotFoundMsg = string.Format(AlertsResources.ArdiaLoginDlg_Role___0___is_not_an_available_option__Pick_your_role_manually_, Account.Role);
+
+                    // loop through popper items to find one that matches the user's role name
+                    string selectNamedRole = @"(function() {" +
+                                             @"for (role of document.querySelector(""body > tf-popper > div"").shadowRoot.querySelectorAll(""tf-dropdown-item"")) {" +
+                                             @$"if (role.shadowRoot.textContent == ""{Account.Role}"") {{" +
+                                             @"role.click(); return; }" +
+                                             @$"}} alert(""{roleNotFoundMsg}""); }})()";
+                    await ExecuteScriptAsyncUntil(clickDropDownBox, async s => await ExecuteScriptAsync(selectPopper) != @"null");
+                    await ExecuteScriptAsync(selectNamedRole);
+                }
 
                 // listening for navigation to start
                 webView.CoreWebView2.NavigationStarting += CoreWebView2_NavigationStarting;
-                await ExecuteScriptAsync(nextSelector + @".click()");
+
+                if (Account.Role.Any())
+                {
+                    var nextEnabled = await ExecuteScriptAsyncUntil(nextSelector + @".disabled", s => Task.FromResult(s == @"false"), 4);
+                    if (nextEnabled == @"false")
+                    {
+                        await ExecuteScriptAsync(nextSelector + @".click()");
+                    }
+                }
             }
         }
     }
