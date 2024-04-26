@@ -120,8 +120,8 @@ namespace pwiz.SkylineTestConnected
                 // short circuit single role test to reduce test time
                 if (_account.Role.IsNullOrEmpty())
                 {
-                    RunUI(openDataSourceDialog.CancelDialog);
-                    RunUI(importResultsDlg.CancelDialog);
+                    OkDialog(openDataSourceDialog, openDataSourceDialog.CancelDialog);
+                    OkDialog(importResultsDlg, importResultsDlg.CancelDialog);
                     return;
                 }
 

@@ -22,7 +22,6 @@ using System.Xml.Linq;
 using System.Xml.Serialization;
 using pwiz.Common.Collections;
 using pwiz.Skyline.Util;
-using pwiz.Skyline.Util.Extensions;
 
 namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 {
