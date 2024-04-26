@@ -28,18 +28,37 @@ namespace pwiz.SkylineTestUtil
     {
         private static string _baseUrl = "https://hyperbridge.cmdtest.thermofisher.com";
 
-        public static ArdiaAccount GetTestAccount()
+        public enum AccountType
         {
+            MultiRole,
+            SingleRole
+        }
+
+        public static ArdiaAccount GetTestAccount(AccountType type = AccountType.MultiRole)
+        {
+            string envVarName = type == AccountType.MultiRole ? "ARDIA_PASSWORD" : "ARDIA_PASSWORD_1ROLE";
             //return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeServerUrl(_baseUrl).ChangeUsername("kajo.nagyeri@gmail.com").ChangePassword("Thermo@123");
 
-            var password = Environment.GetEnvironmentVariable("ARDIA_PASSWORD");
+            var password = Environment.GetEnvironmentVariable(envVarName);
             if (string.IsNullOrWhiteSpace(password))
-            {
                 return null;
-            }
-            return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeRole("Tester").ChangeServerUrl(_baseUrl).ChangeUsername("matt.chambers42@gmail.com")
-                .ChangePassword(password);
 
+            switch (type)
+            {
+                case AccountType.MultiRole:
+                    return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeRole("Tester")
+                        .ChangeServerUrl(_baseUrl)
+                        .ChangeUsername("matt.chambers42@gmail.com")
+                        .ChangePassword(password);
+
+                case AccountType.SingleRole:
+                    return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeServerUrl(_baseUrl)
+                        .ChangeUsername("kajo.nagyeri@gmail.com")
+                        .ChangePassword(password);
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
         }
 
         public static bool EnableArdiaTests

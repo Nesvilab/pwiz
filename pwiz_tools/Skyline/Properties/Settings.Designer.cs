@@ -3476,17 +3476,5 @@ namespace pwiz.Skyline.Properties {
                 this["FullScanPropertySheetVisible"] = value;
             }
         }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string LastArdiaLoginCookieValue {
-            get {
-                return ((string)(this["LastArdiaLoginCookieValue"]));
-            }
-            set {
-                this["LastArdiaLoginCookieValue"] = value;
-            }
-        }
     }
 }

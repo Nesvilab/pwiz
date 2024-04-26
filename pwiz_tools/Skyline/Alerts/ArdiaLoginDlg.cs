@@ -67,9 +67,9 @@ namespace pwiz.Skyline.Alerts
 
         protected override void OnShown(EventArgs e)
         {
-            if (!Settings.Default.LastArdiaLoginCookieValue.IsNullOrEmpty())
+            if (Settings.Default.LastArdiaLoginCookieByUsername.ContainsKey(Account.Username))
             {
-                _bffCookie = new Cookie(@"Bff-Host", Settings.Default.LastArdiaLoginCookieValue);
+                _bffCookie = new Cookie(@"Bff-Host", Settings.Default.LastArdiaLoginCookieByUsername[Account.Username]);
                 AuthenticatedHttpClientFactory = GetFactory();
                 DialogResult = DialogResult.OK;
                 return;
@@ -156,7 +156,7 @@ namespace pwiz.Skyline.Alerts
             if (bffCookie != null)
             {
                 _bffCookie = bffCookie.ToSystemNetCookie();
-                Settings.Default.LastArdiaLoginCookieValue = _bffCookie.Value;
+                Settings.Default.LastArdiaLoginCookieByUsername[Account.Username] = _bffCookie.Value;
                 Settings.Default.Save();
                 AuthenticatedHttpClientFactory = GetFactory();
 

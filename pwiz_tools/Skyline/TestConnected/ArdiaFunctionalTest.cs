@@ -38,14 +38,10 @@ namespace pwiz.SkylineTestConnected
     public class ArdiaTest : AbstractFunctionalTestEx
     {
         private string _saveCookie;
-
-        private static ArdiaAccount GetAccount()
-        {
-            return ArdiaTestUtil.GetTestAccount();
-        }
+        private ArdiaAccount _account;
 
         [TestMethod]
-        public void TestArdia()
+        public void TestArdiaSingleRole()
         {
             if (!ArdiaTestUtil.EnableArdiaTests)
             {
@@ -55,16 +51,36 @@ namespace pwiz.SkylineTestConnected
 
             TestFilesZip = @"TestConnected\ArdiaFunctionalTest.zip";
 
+            _account = ArdiaTestUtil.GetTestAccount(ArdiaTestUtil.AccountType.SingleRole);
             // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
             if (!Program.UseOriginalURLs)
-                _saveCookie = Settings.Default.LastArdiaLoginCookieValue;
+                Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
+            RunFunctionalTest();
+        }
+
+        [TestMethod]
+        public void TestArdiaMultiRole()
+        {
+            if (!ArdiaTestUtil.EnableArdiaTests)
+            {
+                Console.Error.WriteLine("NOTE: skipping Ardia test because username/password for Ardia is not configured in environment variables");
+                return;
+            }
+
+            TestFilesZip = @"TestConnected\ArdiaFunctionalTest.zip";
+
+            _account = ArdiaTestUtil.GetTestAccount();
+
+            // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
+            if (!Program.UseOriginalURLs)
+                Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
             RunFunctionalTest();
         }
 
         protected override void Cleanup()
         {
             // restore cookie after post-test settings reset
-            Settings.Default.LastArdiaLoginCookieValue = _saveCookie;
+            Settings.Default.LastArdiaLoginCookieByUsername[_account.Username] = _saveCookie;
             Settings.Default.Save();
         }
 
@@ -86,26 +102,29 @@ namespace pwiz.SkylineTestConnected
 
         protected override void DoTest()
         {
-            // restore cookie if it was preserved in TestMethod
-            if (!_saveCookie.IsNullOrEmpty())
-            {
-                //Settings.Default.LastArdiaLoginCookieValue = _saveCookie;
-                Settings.Default.Save();
-            }
-
             RunUI(() => SkylineWindow.OpenFile(TestFilesDir.GetTestPath("small.sky")));
             var importResultsDlg = ShowDialog<ImportResultsDlg>(SkylineWindow.ImportResults);
             var openDataSourceDialog = ShowDialog<OpenDataSourceDialog>(importResultsDlg.OkDialog);
             var editAccountDlg = ShowDialog<EditRemoteAccountDlg>(() => openDataSourceDialog.CurrentDirectory = RemoteUrl.EMPTY);
-            RunUI(() => editAccountDlg.SetRemoteAccount(GetAccount()));
+            RunUI(() => editAccountDlg.SetRemoteAccount(_account));
 
             // Click test button
             var testSuccessfulDlg = ShowDialog<MessageDlg>(() => editAccountDlg.TestSettings());
             OkDialog(testSuccessfulDlg, testSuccessfulDlg.OkDialog);
 
+
             try
             {
                 OkDialog(editAccountDlg, editAccountDlg.OkDialog);
+
+                // short circuit single role test to reduce test time
+                if (_account.Role.IsNullOrEmpty())
+                {
+                    RunUI(openDataSourceDialog.CancelDialog);
+                    RunUI(importResultsDlg.CancelDialog);
+                    return;
+                }
+
                 OpenFile(openDataSourceDialog, "Skyline");
                 OpenFile(openDataSourceDialog, "Small Files");
                 OpenFile(openDataSourceDialog, "Reserpine_10 pg_µL_2_08", "Uracil_Caffeine(Water)_Inj_Det_2_04");
@@ -130,7 +149,7 @@ namespace pwiz.SkylineTestConnected
             finally
             {
                 // always save cookie if login was successful
-                _saveCookie = Settings.Default.LastArdiaLoginCookieValue;
+                _saveCookie = Settings.Default.LastArdiaLoginCookieByUsername[_account.Username];
             }
         }
 
