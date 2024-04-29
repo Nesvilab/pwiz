@@ -26,7 +26,6 @@ using pwiz.Skyline.Util;
 using Microsoft.Web.WebView2.Core;
 using pwiz.Skyline.Util.Extensions;
 using System.Net;
-using pwiz.Common.Collections;
 using pwiz.Skyline.Properties;
 
 namespace pwiz.Skyline.Alerts
