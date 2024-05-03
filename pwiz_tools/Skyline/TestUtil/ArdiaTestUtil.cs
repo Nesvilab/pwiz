@@ -37,7 +37,6 @@ namespace pwiz.SkylineTestUtil
         public static ArdiaAccount GetTestAccount(AccountType type = AccountType.MultiRole)
         {
             string envVarName = type == AccountType.MultiRole ? "ARDIA_PASSWORD" : "ARDIA_PASSWORD_1ROLE";
-            //return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeServerUrl(_baseUrl).ChangeUsername("kajo.nagyeri@gmail.com").ChangePassword("Thermo@123");
 
             var password = Environment.GetEnvironmentVariable(envVarName);
             if (string.IsNullOrWhiteSpace(password))
