@@ -108,14 +108,11 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return presignedUrlJson[@"presignedUrl"].ToString();
         }
 
-        public override MsDataFileImpl OpenMsDataFile(bool simAsSpectra, bool preferOnlyMs1,
-            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints, string downloadPath)
+        public override MsDataFileImpl OpenMsDataFile(OpenMsDataFileParams openMsDataFileParams)
         {
-            var rawFilepath = Path.Combine(downloadPath, RawName);
+            var rawFilepath = Path.Combine(openMsDataFileParams.DownloadPath, RawName);
             if (File.Exists(rawFilepath))
-                return new MsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
-                    requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
-                    ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
+                return openMsDataFileParams.OpenLocalFile(rawFilepath, 0, LockMassParameters);
 
             var account = FindMatchingAccount(Settings.Default.RemoteAccountList) as ArdiaAccount;
             if (account == null)
@@ -130,7 +127,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             using var client = account.GetAuthenticatedHttpClient();
             string presignedUrl = GetPresignedUrl(client, StorageId);
 
-            var response = client.GetAsync(presignedUrl, HttpCompletionOption.ResponseHeadersRead).Result;
+            var response = client.GetAsync(presignedUrl, HttpCompletionOption.ResponseHeadersRead, openMsDataFileParams.CancellationToken).Result;
             response.EnsureSuccessStatusCode();
             var responseStream = response.Content.ReadAsStreamAsync().Result;
             using (var fileStream = new FileStream(rawFilepath, FileMode.CreateNew))
@@ -138,9 +135,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
                 responseStream.CopyTo(fileStream);
             }
 
-            return new MsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
-                requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
-                ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
+            return openMsDataFileParams.OpenLocalFile(rawFilepath, 0, LockMassParameters);
         }
     }
 }

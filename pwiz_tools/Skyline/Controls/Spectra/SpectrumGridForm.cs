@@ -604,7 +604,11 @@ namespace pwiz.Skyline.Controls.Spectra
                 CommonActionUtil.SafeBeginInvoke(_form, () => _form.UpdateProgress(message, 0, file));
 
                 string docDir = Path.GetDirectoryName(_form.SkylineWindow.DocumentFilePath) ?? Directory.GetCurrentDirectory();
-                using (var msDataFile = file.OpenMsDataFile(true, false, false, false, true, docDir))
+                var openMsDataFileParams = new OpenMsDataFileParams()
+                {
+                    DownloadPath = docDir
+                };
+                using (var msDataFile = file.OpenMsDataFile(openMsDataFileParams))
                 {
                     var spectra = new List<SpectrumMetadata>();
                     int spectrumCount = msDataFile.SpectrumCount;
