@@ -52,7 +52,7 @@ namespace pwiz.SkylineTestUtil
 
                 case AccountType.SingleRole:
                     return (ArdiaAccount)ArdiaAccount.DEFAULT.ChangeServerUrl(_baseUrl)
-                        .ChangeUsername("kajo.nagyeri@gmail.com")
+                        .ChangeUsername("chambem2@uw.edu")
                         .ChangePassword(password);
 
                 default:

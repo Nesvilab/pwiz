@@ -62,6 +62,7 @@ namespace pwiz.Skyline.ToolsUI
             else if (remoteAccount is ArdiaAccount ardiaAccount)
             {
                 tbxRole.Text = ardiaAccount.Role;
+                cbDeleteRawAfterImport.Checked = ardiaAccount.DeleteRawAfterImport;
             }
         }
 
@@ -82,6 +83,7 @@ namespace pwiz.Skyline.ToolsUI
             {
                 var ardiaAccount = (ArdiaAccount) remoteAccount;
                 ardiaAccount = ardiaAccount.ChangeRole(tbxRole.Text);
+                ardiaAccount = ardiaAccount.ChangeDeleteRawAfterImport(cbDeleteRawAfterImport.Checked);
                 remoteAccount = ardiaAccount;
             }
             return remoteAccount;

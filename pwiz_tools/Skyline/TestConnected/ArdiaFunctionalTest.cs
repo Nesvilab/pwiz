@@ -51,7 +51,7 @@ namespace pwiz.SkylineTestConnected
 
             TestFilesZip = @"TestConnected\ArdiaFunctionalTest.zip";
 
-            _account = ArdiaTestUtil.GetTestAccount(ArdiaTestUtil.AccountType.SingleRole);
+            _account = ArdiaTestUtil.GetTestAccount(ArdiaTestUtil.AccountType.SingleRole).ChangeDeleteRawAfterImport(true);
             // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
             if (!Program.UseOriginalURLs)
                 Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
@@ -117,13 +117,6 @@ namespace pwiz.SkylineTestConnected
             {
                 OkDialog(editAccountDlg, editAccountDlg.OkDialog);
 
-                // short circuit single role test to reduce test time
-                if (_account.Role.IsNullOrEmpty())
-                {
-                    OkDialog(openDataSourceDialog, openDataSourceDialog.CancelDialog);
-                    OkDialog(importResultsDlg, importResultsDlg.CancelDialog);
-                    return;
-                }
 
                 OpenFile(openDataSourceDialog, "Skyline");
                 OpenFile(openDataSourceDialog, "Small Files");
@@ -131,11 +124,20 @@ namespace pwiz.SkylineTestConnected
                 WaitForDocumentLoaded();
                 WaitForClosedAllChromatogramsGraph();
 
+                string rawFilepath = TestFilesDir.GetTestPath("Reserpine_10 pg_µL_2_08.raw");
+
+                // short circuit single role test to reduce test time
+                if (_account.Role.IsNullOrEmpty())
+                {
+                    AssertEx.FileNotExists(rawFilepath); // for single role test, file should have been deleted after importing
+                    return;
+                }
+
                 RunUI(() => SkylineWindow.SaveDocument());
                 RunUI(() => SkylineWindow.OpenFile(TestFilesDir.GetTestPath("small.sky")));
 
                 // delete local RAW file to test that it gets redownloaded when clicking on the chromatogram to view a spectrum
-                string rawFilepath = TestFilesDir.GetTestPath("Reserpine_10 pg_µL_2_08.raw");
+                AssertEx.FileExists(rawFilepath);
                 File.Delete(rawFilepath);
 
                 WaitForDocumentLoaded();

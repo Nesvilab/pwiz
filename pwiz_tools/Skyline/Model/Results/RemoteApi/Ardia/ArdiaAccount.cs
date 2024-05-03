@@ -31,6 +31,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
         public static readonly ArdiaAccount DEFAULT = new ArdiaAccount(string.Empty, string.Empty, string.Empty);
 
         public string Role { get; private set; }
+        public bool DeleteRawAfterImport { get; private set; }
 
         public ArdiaAccount(string serverUrl, string username, string password)
         {
@@ -59,19 +60,22 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         private enum ATTR
         {
-            role
+            role,
+            delete_after_import
         }
 
         protected override void ReadXElement(XElement xElement)
         {
             base.ReadXElement(xElement);
             Role = (string) xElement.Attribute(ATTR.role.ToString());
+            DeleteRawAfterImport = Convert.ToBoolean((string) xElement.Attribute(ATTR.delete_after_import.ToString()));
         }
 
         public override void WriteXml(XmlWriter writer)
         {
             base.WriteXml(writer);
             writer.WriteAttributeIfString(ATTR.role, Role);
+            writer.WriteAttribute(ATTR.delete_after_import, DeleteRawAfterImport);
         }
 
         private Func<HttpClient> _authenticatedHttpClientFactory;
@@ -102,6 +106,11 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return ChangeProp(ImClone(this), im => im.Role = role);
         }
 
+        public ArdiaAccount ChangeDeleteRawAfterImport(bool deleteAfterImport)
+        {
+            return ChangeProp(ImClone(this), im => im.DeleteRawAfterImport = deleteAfterImport);
+        }
+
         public ArdiaUrl GetRootArdiaUrl()
         {
             return (ArdiaUrl) ArdiaUrl.Empty.ChangeServerUrl(ServerUrl).ChangeUsername(Username);
@@ -122,7 +131,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         protected bool Equals(ArdiaAccount other)
         {
-            return base.Equals(other) && Equals(Role, other.Role);
+            return base.Equals(other) && Equals(Role, other.Role) && DeleteRawAfterImport == other.DeleteRawAfterImport;
         }
 
         public override int GetHashCode()
@@ -131,6 +140,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             {
                 int hashCode = base.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Role?.GetHashCode() ?? 0);
+                hashCode = (hashCode * 397) ^ DeleteRawAfterImport.GetHashCode();
                 return hashCode;
             }
         }

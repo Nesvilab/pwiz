@@ -163,7 +163,7 @@
     <value>NoControl</value>
   </data>
   <data name="btnCancel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>327, 466</value>
+    <value>327, 471</value>
   </data>
   <data name="btnCancel.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -193,7 +193,7 @@
     <value>NoControl</value>
   </data>
   <data name="btnOK.Location" type="System.Drawing.Point, System.Drawing">
-    <value>246, 466</value>
+    <value>246, 471</value>
   </data>
   <data name="btnOK.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -364,7 +364,7 @@
     <value>Bottom, Right</value>
   </data>
   <data name="btnTest.Location" type="System.Drawing.Point, System.Drawing">
-    <value>165, 466</value>
+    <value>165, 471</value>
   </data>
   <data name="btnTest.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 23</value>
@@ -639,6 +639,114 @@
   <data name="pnlArdiaSettings.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
+  <data name="&gt;&gt;cbDeleteRawAfterImport.Name" xml:space="preserve">
+    <value>cbDeleteRawAfterImport</value>
+  </data>
+  <data name="&gt;&gt;cbDeleteRawAfterImport.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cbDeleteRawAfterImport.Parent" xml:space="preserve">
+    <value>pnlArdiaSettings</value>
+  </data>
+  <data name="&gt;&gt;cbDeleteRawAfterImport.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;tbxRole.Name" xml:space="preserve">
+    <value>tbxRole</value>
+  </data>
+  <data name="&gt;&gt;tbxRole.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tbxRole.Parent" xml:space="preserve">
+    <value>pnlArdiaSettings</value>
+  </data>
+  <data name="&gt;&gt;tbxRole.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="&gt;&gt;lblRole.Name" xml:space="preserve">
+    <value>lblRole</value>
+  </data>
+  <data name="&gt;&gt;lblRole.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;lblRole.Parent" xml:space="preserve">
+    <value>pnlArdiaSettings</value>
+  </data>
+  <data name="&gt;&gt;lblRole.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
+  <data name="pnlArdiaSettings.Location" type="System.Drawing.Point, System.Drawing">
+    <value>8, 219</value>
+  </data>
+  <data name="pnlArdiaSettings.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>0, 0, 0, 0</value>
+  </data>
+  <data name="pnlArdiaSettings.Size" type="System.Drawing.Size, System.Drawing">
+    <value>407, 88</value>
+  </data>
+  <data name="pnlArdiaSettings.TabIndex" type="System.Int32, mscorlib">
+    <value>12</value>
+  </data>
+  <data name="&gt;&gt;pnlArdiaSettings.Name" xml:space="preserve">
+    <value>pnlArdiaSettings</value>
+  </data>
+  <data name="&gt;&gt;pnlArdiaSettings.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;pnlArdiaSettings.Parent" xml:space="preserve">
+    <value>flowLayoutPanel</value>
+  </data>
+  <data name="&gt;&gt;pnlArdiaSettings.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="flowLayoutPanel.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 0</value>
+  </data>
+  <data name="flowLayoutPanel.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>8, 0, 0, 0</value>
+  </data>
+  <data name="flowLayoutPanel.Size" type="System.Drawing.Size, System.Drawing">
+    <value>415, 465</value>
+  </data>
+  <data name="flowLayoutPanel.TabIndex" type="System.Int32, mscorlib">
+    <value>13</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanel.Name" xml:space="preserve">
+    <value>flowLayoutPanel</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanel.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;flowLayoutPanel.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="groupBoxUnifi.Location" type="System.Drawing.Point, System.Drawing">
+    <value>11, 310</value>
+  </data>
+  <data name="groupBoxUnifi.Size" type="System.Drawing.Size, System.Drawing">
+    <value>397, 144</value>
+  </data>
+  <data name="groupBoxUnifi.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="groupBoxUnifi.Text" xml:space="preserve">
+    <value>Advanced Unifi Settings</value>
+  </data>
+  <data name="&gt;&gt;groupBoxUnifi.Name" xml:space="preserve">
+    <value>groupBoxUnifi</value>
+  </data>
+  <data name="&gt;&gt;groupBoxUnifi.Type" xml:space="preserve">
+    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;groupBoxUnifi.Parent" xml:space="preserve">
+    <value>flowLayoutPanel</value>
+  </data>
+  <data name="&gt;&gt;groupBoxUnifi.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
   <data name="tbxRole.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Left, Right</value>
   </data>
@@ -661,7 +769,7 @@
     <value>pnlArdiaSettings</value>
   </data>
   <data name="&gt;&gt;tbxRole.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="lblRole.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -691,79 +799,34 @@
     <value>pnlArdiaSettings</value>
   </data>
   <data name="&gt;&gt;lblRole.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
-  <data name="pnlArdiaSettings.Location" type="System.Drawing.Point, System.Drawing">
-    <value>8, 219</value>
+  <data name="cbDeleteRawAfterImport.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
   </data>
-  <data name="pnlArdiaSettings.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>0, 0, 0, 0</value>
+  <data name="cbDeleteRawAfterImport.Location" type="System.Drawing.Point, System.Drawing">
+    <value>16, 59</value>
   </data>
-  <data name="pnlArdiaSettings.Size" type="System.Drawing.Size, System.Drawing">
-    <value>407, 66</value>
+  <data name="cbDeleteRawAfterImport.Size" type="System.Drawing.Size, System.Drawing">
+    <value>176, 17</value>
   </data>
-  <data name="pnlArdiaSettings.TabIndex" type="System.Int32, mscorlib">
-    <value>12</value>
+  <data name="cbDeleteRawAfterImport.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
   </data>
-  <data name="&gt;&gt;pnlArdiaSettings.Name" xml:space="preserve">
+  <data name="cbDeleteRawAfterImport.Text" xml:space="preserve">
+    <value>Delete RAW files after importing</value>
+  </data>
+  <data name="&gt;&gt;cbDeleteRawAfterImport.Name" xml:space="preserve">
+    <value>cbDeleteRawAfterImport</value>
+  </data>
+  <data name="&gt;&gt;cbDeleteRawAfterImport.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cbDeleteRawAfterImport.Parent" xml:space="preserve">
     <value>pnlArdiaSettings</value>
   </data>
-  <data name="&gt;&gt;pnlArdiaSettings.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;pnlArdiaSettings.Parent" xml:space="preserve">
-    <value>flowLayoutPanel</value>
-  </data>
-  <data name="&gt;&gt;pnlArdiaSettings.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="flowLayoutPanel.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 0</value>
-  </data>
-  <data name="flowLayoutPanel.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>8, 0, 0, 0</value>
-  </data>
-  <data name="flowLayoutPanel.Size" type="System.Drawing.Size, System.Drawing">
-    <value>415, 460</value>
-  </data>
-  <data name="flowLayoutPanel.TabIndex" type="System.Int32, mscorlib">
-    <value>13</value>
-  </data>
-  <data name="&gt;&gt;flowLayoutPanel.Name" xml:space="preserve">
-    <value>flowLayoutPanel</value>
-  </data>
-  <data name="&gt;&gt;flowLayoutPanel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.FlowLayoutPanel, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;flowLayoutPanel.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;flowLayoutPanel.ZOrder" xml:space="preserve">
+  <data name="&gt;&gt;cbDeleteRawAfterImport.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="groupBoxUnifi.Location" type="System.Drawing.Point, System.Drawing">
-    <value>11, 288</value>
-  </data>
-  <data name="groupBoxUnifi.Size" type="System.Drawing.Size, System.Drawing">
-    <value>397, 144</value>
-  </data>
-  <data name="groupBoxUnifi.TabIndex" type="System.Int32, mscorlib">
-    <value>8</value>
-  </data>
-  <data name="groupBoxUnifi.Text" xml:space="preserve">
-    <value>Advanced Unifi Settings</value>
-  </data>
-  <data name="&gt;&gt;groupBoxUnifi.Name" xml:space="preserve">
-    <value>groupBoxUnifi</value>
-  </data>
-  <data name="&gt;&gt;groupBoxUnifi.Type" xml:space="preserve">
-    <value>System.Windows.Forms.GroupBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;groupBoxUnifi.Parent" xml:space="preserve">
-    <value>flowLayoutPanel</value>
-  </data>
-  <data name="&gt;&gt;groupBoxUnifi.ZOrder" xml:space="preserve">
-    <value>2</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
@@ -772,7 +835,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>414, 501</value>
+    <value>414, 506</value>
   </data>
   <data name="$this.MinimumSize" type="System.Drawing.Size, System.Drawing">
     <value>376, 493</value>

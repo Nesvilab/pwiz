@@ -1711,7 +1711,7 @@ namespace pwiz.ProteowizardWrapper
             MSDataFile.write(_msDataFile, path);
         }
 
-        public void Dispose()
+        public virtual void Dispose()
         {
             _lastSpectrum?.Dispose();
             _lastScanIndex = -1;

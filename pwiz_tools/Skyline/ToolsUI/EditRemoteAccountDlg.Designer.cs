@@ -52,6 +52,7 @@
             this.pnlArdiaSettings = new System.Windows.Forms.Panel();
             this.flowLayoutPanel = new System.Windows.Forms.FlowLayoutPanel();
             this.pnlCommonSettings = new System.Windows.Forms.Panel();
+            this.cbDeleteRawAfterImport = new System.Windows.Forms.CheckBox();
             this.groupBoxUnifi.SuspendLayout();
             this.pnlArdiaSettings.SuspendLayout();
             this.flowLayoutPanel.SuspendLayout();
@@ -179,6 +180,7 @@
             // pnlArdiaSettings
             // 
             resources.ApplyResources(this.pnlArdiaSettings, "pnlArdiaSettings");
+            this.pnlArdiaSettings.Controls.Add(this.cbDeleteRawAfterImport);
             this.pnlArdiaSettings.Controls.Add(this.tbxRole);
             this.pnlArdiaSettings.Controls.Add(this.lblRole);
             this.flowLayoutPanel.SetFlowBreak(this.pnlArdiaSettings, true);
@@ -206,6 +208,12 @@
             this.pnlCommonSettings.Controls.Add(this.lblPassword);
             this.flowLayoutPanel.SetFlowBreak(this.pnlCommonSettings, true);
             this.pnlCommonSettings.Name = "pnlCommonSettings";
+            // 
+            // cbDeleteRawAfterImport
+            // 
+            resources.ApplyResources(this.cbDeleteRawAfterImport, "cbDeleteRawAfterImport");
+            this.cbDeleteRawAfterImport.Name = "cbDeleteRawAfterImport";
+            this.cbDeleteRawAfterImport.UseVisualStyleBackColor = true;
             // 
             // EditRemoteAccountDlg
             // 
@@ -259,5 +267,6 @@
         private System.Windows.Forms.Panel pnlArdiaSettings;
         private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel;
         private System.Windows.Forms.Panel pnlCommonSettings;
+        private System.Windows.Forms.CheckBox cbDeleteRawAfterImport;
     }
 }

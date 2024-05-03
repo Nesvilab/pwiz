@@ -108,6 +108,29 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return presignedUrlJson[@"presignedUrl"].ToString();
         }
 
+        /// <summary>
+        /// A wrapper around MsDataFileImpl that deletes the input file on Dispose().
+        /// </summary>
+        public class TempMsDataFileImpl : MsDataFileImpl
+        {
+            public TempMsDataFileImpl(string path, int sampleIndex = 0, LockMassParameters lockmassParameters = null,
+                bool simAsSpectra = false, bool srmAsSpectra = false, bool acceptZeroLengthSpectra = true,
+                bool requireVendorCentroidedMS1 = false, bool requireVendorCentroidedMS2 = false,
+                bool ignoreZeroIntensityPoints = false, int preferOnlyMsLevel = 0,
+                bool combineIonMobilitySpectra = true, bool trimNativeId = true) : base(path, sampleIndex,
+                lockmassParameters, simAsSpectra, srmAsSpectra, acceptZeroLengthSpectra, requireVendorCentroidedMS1,
+                requireVendorCentroidedMS2, ignoreZeroIntensityPoints, preferOnlyMsLevel, combineIonMobilitySpectra,
+                trimNativeId)
+            {
+            }
+
+            public override void Dispose()
+            {
+                base.Dispose();
+                FileEx.SafeDelete(FilePath);
+            }
+        }
+
         public override MsDataFileImpl OpenMsDataFile(bool simAsSpectra, bool preferOnlyMs1,
             bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints, string downloadPath)
         {
@@ -138,9 +161,14 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
                 responseStream.CopyTo(fileStream);
             }
 
-            return new MsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
-                requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
-                ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
+            if (account.DeleteRawAfterImport)
+                return new TempMsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
+                    requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
+                    ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
+            else
+                return new MsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
+                    requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
+                    ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
         }
     }
 }
