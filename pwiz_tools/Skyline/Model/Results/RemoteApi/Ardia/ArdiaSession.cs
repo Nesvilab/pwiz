@@ -102,6 +102,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
                     var childUrl = ardiaUrl.ChangeId(fileObject.Id)
                         .ChangeRawName(rawName)
+                        .ChangeRawSize(fileObject.Size)
                         .ChangeStorageId(fileObject.StorageId)
                         .ChangePathParts(ardiaUrl.GetPathParts().Concat(new[] { fileObject.Name }))
                         .ChangeModifiedTime(fileObject.ModifiedAt);

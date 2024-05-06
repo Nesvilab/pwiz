@@ -103,7 +103,7 @@ namespace TestPerf
         }
 
         [TestMethod, NoParallelTesting(TestExclusionReason.RESOURCE_INTENSIVE)]
-        public void TestOrbiPrmTutorialArdia()
+        public void TestOrbiPrmArdia()
         {
             if (!ArdiaTestUtil.EnableArdiaTests)
             {

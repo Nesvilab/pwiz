@@ -47,12 +47,14 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             SequenceKey = nameValueParameters.GetValue(@"resourceKey");
             StorageId = nameValueParameters.GetValue(@"storageId");
             RawName = nameValueParameters.GetValue(@"rawName");
+            RawSize = nameValueParameters.GetLongValue(@"rawSize");
         }
 
         public string Id { get; private set; }
         public string SequenceKey { get; private set; }
         public string StorageId { get; private set; }
         public string RawName { get; private set; }
+        public long? RawSize { get; private set; }
 
         public ArdiaUrl ChangeId(string id)
         {
@@ -74,6 +76,11 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return ChangeProp(ImClone(this), im => im.RawName = key);
         }
 
+        public ArdiaUrl ChangeRawSize(long? key)
+        {
+            return ChangeProp(ImClone(this), im => im.RawSize = key);
+        }
+
         public override bool IsWatersLockmassCorrectionCandidate()
         {
             return false;
@@ -91,6 +98,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             result.SetValue(@"resourceKey", SequenceKey);
             result.SetValue(@"storageId", StorageId);
             result.SetValue(@"rawName", RawName);
+            result.SetLongValue(@"rawSize", RawSize);
             return result;
         }
 
@@ -131,14 +139,81 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             }
         }
 
-        public override MsDataFileImpl OpenMsDataFile(bool simAsSpectra, bool preferOnlyMs1,
-            bool centroidMs1, bool centroidMs2, bool ignoreZeroIntensityPoints, string downloadPath)
+        public class ProgressEventArgs : EventArgs
         {
-            var rawFilepath = Path.Combine(downloadPath, RawName);
+            private float _progress;
+
+            public ProgressEventArgs(float progress)
+            {
+                _progress = progress;
+            }
+
+            public float Progress => _progress;
+
+        }
+
+        // adapted from https://stackoverflow.com/a/57439154/638445
+        public class ProgressStream : Stream
+        {
+            private Stream _input;
+            private long _length;
+            private long _position;
+            public event EventHandler<ProgressEventArgs> UpdateProgress;
+
+            public ProgressStream(Stream input) : this(input, input.Length)
+            {
+            }
+
+            public ProgressStream(Stream input, long expectedSize)
+            {
+                _input = input;
+                _length = expectedSize;
+            }
+
+            public override void Flush()
+            {
+                _input.Flush();
+            }
+
+            public override long Seek(long offset, SeekOrigin origin)
+            {
+                return _input.Seek(offset, origin);
+            }
+
+            public override void SetLength(long value)
+            {
+                _input.SetLength(value);
+            }
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                int n = _input.Read(buffer, offset, count);
+                _position += n;
+                UpdateProgress?.Invoke(this, new ProgressEventArgs((1.0f * _position) / _length));
+                return n;
+            }
+
+            public override void Write(byte[] buffer, int offset, int count)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override bool CanRead => true;
+            public override bool CanSeek => false;
+            public override bool CanWrite => false;
+            public override long Length => _length;
+            public override long Position
+            {
+                get { return _position; }
+                set { throw new NotImplementedException(); }
+            }
+        }
+
+        public override MsDataFileImpl OpenMsDataFile(OpenMsDataFileParams openMsDataFileParams)
+        {
+            var rawFilepath = Path.Combine(openMsDataFileParams.DownloadPath, RawName);
             if (File.Exists(rawFilepath))
-                return new MsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
-                    requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
-                    ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
+                return openMsDataFileParams.OpenLocalFile(rawFilepath, 0, LockMassParameters);
 
             var account = FindMatchingAccount(Settings.Default.RemoteAccountList) as ArdiaAccount;
             if (account == null)
@@ -150,25 +225,43 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             if (StorageId.IsNullOrEmpty())
                 throw new InvalidDataException(ArdiaResources.ArdiaUrl_OpenMsDataFile_cannot_open_an_ArdiaUrl_because_it_is_not_a_RAW_file_URL_with_a_StorageId);
 
+            var p = openMsDataFileParams;
             using var client = account.GetAuthenticatedHttpClient();
             string presignedUrl = GetPresignedUrl(client, StorageId);
 
-            var response = client.GetAsync(presignedUrl, HttpCompletionOption.ResponseHeadersRead).Result;
+            p.ProgressStatus = p.ProgressStatus.ChangeSegments(p.ProgressStatus.Segment, Math.Max(1, p.ProgressStatus.SegmentCount) + 1);
+            p.ProgressMonitor.UpdateProgress(p.ProgressStatus);
+
+            var response = client.GetAsync(presignedUrl, HttpCompletionOption.ResponseHeadersRead, openMsDataFileParams.CancellationToken).Result;
             response.EnsureSuccessStatusCode();
             var responseStream = response.Content.ReadAsStreamAsync().Result;
+            using (var progressStream = new ProgressStream(responseStream, RawSize ?? 1))
             using (var fileStream = new FileStream(rawFilepath, FileMode.CreateNew))
             {
-                responseStream.CopyTo(fileStream);
+                void ProgressStream_OnUpdateProgress(object sender, ProgressEventArgs e)
+                {
+                    var newPercentComplete = (int) Math.Round(e.Progress * 100);
+                    if (newPercentComplete - p.ProgressStatus.PercentComplete < 1)
+                        return;
+                    p.ProgressStatus = p.ProgressStatus.ChangePercentComplete(newPercentComplete);
+                    p.ProgressMonitor.UpdateProgress(p.ProgressStatus);
+                }
+
+                progressStream.UpdateProgress += ProgressStream_OnUpdateProgress;
+                progressStream.CopyToAsync(fileStream, 1 << 16, openMsDataFileParams.CancellationToken).Wait();
             }
 
+            p.ProgressStatus = p.ProgressStatus.NextSegment();
+            p.ProgressMonitor.UpdateProgress(p.ProgressStatus);
+
             if (account.DeleteRawAfterImport)
-                return new TempMsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
-                    requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
-                    ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
+                return new TempMsDataFileImpl(rawFilepath, 0, LockMassParameters, p.SimAsSpectra,
+                    requireVendorCentroidedMS1: p.CentroidMs1, requireVendorCentroidedMS2: p.CentroidMs2,
+                    ignoreZeroIntensityPoints: p.IgnoreZeroIntensityPoints, preferOnlyMsLevel: p.PreferOnlyMs1 ? 1 : 0);
             else
-                return new MsDataFileImpl(rawFilepath, 0, LockMassParameters, simAsSpectra,
-                    requireVendorCentroidedMS1: centroidMs1, requireVendorCentroidedMS2: centroidMs2,
-                    ignoreZeroIntensityPoints: ignoreZeroIntensityPoints, preferOnlyMsLevel: preferOnlyMs1 ? 1 : 0);
+                return new MsDataFileImpl(rawFilepath, 0, LockMassParameters, p.SimAsSpectra,
+                    requireVendorCentroidedMS1: p.CentroidMs1, requireVendorCentroidedMS2: p.CentroidMs2,
+                    ignoreZeroIntensityPoints: p.IgnoreZeroIntensityPoints, preferOnlyMsLevel: p.PreferOnlyMs1 ? 1 : 0);
         }
     }
 }

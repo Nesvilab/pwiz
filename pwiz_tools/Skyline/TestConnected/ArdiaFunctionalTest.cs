@@ -17,6 +17,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -39,6 +40,22 @@ namespace pwiz.SkylineTestConnected
     {
         private string _saveCookie;
         private ArdiaAccount _account;
+        private List<string[]> _openPaths;
+
+        private readonly List<string[]> SmallPaths = new List<string[]>
+        {
+            new[] { "Skyline" },
+            new[] { "Small Files" },
+            new[] { "Reserpine_10 pg_µL_2_08", "Uracil_Caffeine(Water)_Inj_Det_2_04" }
+        };
+
+        private readonly List<string[]> LargePaths = new List<string[]>
+        {
+            new[] { "Skyline" },
+            new[] { "ExtraLargeFiles" },
+            new[] { "Astral" },
+            new[] { "astral" }
+        };
 
         [TestMethod]
         public void TestArdiaSingleRole()
@@ -52,6 +69,8 @@ namespace pwiz.SkylineTestConnected
             TestFilesZip = @"TestConnected\ArdiaFunctionalTest.zip";
 
             _account = ArdiaTestUtil.GetTestAccount(ArdiaTestUtil.AccountType.SingleRole).ChangeDeleteRawAfterImport(true);
+            _openPaths = SmallPaths;
+
             // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
             if (!Program.UseOriginalURLs)
                 Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
@@ -70,6 +89,33 @@ namespace pwiz.SkylineTestConnected
             TestFilesZip = @"TestConnected\ArdiaFunctionalTest.zip";
 
             _account = ArdiaTestUtil.GetTestAccount();
+            _openPaths = SmallPaths;
+
+            // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
+            if (!Program.UseOriginalURLs)
+                Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
+            RunFunctionalTest();
+        }
+
+        [TestMethod]
+        public void TestArdiaLargeFile()
+        {
+            if (!ArdiaTestUtil.EnableArdiaTests)
+            {
+                Console.Error.WriteLine("NOTE: skipping Ardia test because username/password for Ardia is not configured in environment variables");
+                return;
+            }
+
+            /*if (!RunPerfTests)
+            {
+                Console.Error.WriteLine("NOTE: skipping TestArdiaLargeFile because perftests are not enabled");
+                return;
+            }*/
+
+            TestFilesZip = @"TestConnected\ArdiaFunctionalTest.zip";
+
+            _account = ArdiaTestUtil.GetTestAccount(ArdiaTestUtil.AccountType.SingleRole);
+            _openPaths = LargePaths;
 
             // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
             if (!Program.UseOriginalURLs)
@@ -79,6 +125,9 @@ namespace pwiz.SkylineTestConnected
 
         protected override void Cleanup()
         {
+            if (_saveCookie == null)
+                return;
+
             // restore cookie after post-test settings reset
             Settings.Default.LastArdiaLoginCookieByUsername[_account.Username] = _saveCookie;
             Settings.Default.Save();
@@ -117,14 +166,16 @@ namespace pwiz.SkylineTestConnected
             {
                 OkDialog(editAccountDlg, editAccountDlg.OkDialog);
 
-
-                OpenFile(openDataSourceDialog, "Skyline");
-                OpenFile(openDataSourceDialog, "Small Files");
-                OpenFile(openDataSourceDialog, "Reserpine_10 pg_µL_2_08", "Uracil_Caffeine(Water)_Inj_Det_2_04");
+                foreach(var paths in _openPaths)
+                    OpenFile(openDataSourceDialog, paths);
                 WaitForDocumentLoaded();
                 WaitForClosedAllChromatogramsGraph();
 
-                string rawFilepath = TestFilesDir.GetTestPath("Reserpine_10 pg_µL_2_08.raw");
+                // short circuit for large file test
+                if (ReferenceEquals(_openPaths, LargePaths))
+                    return;
+
+                string rawFilepath = TestFilesDir.GetTestPath(_openPaths.Last().First());
 
                 // short circuit single role test to reduce test time
                 if (_account.Role.IsNullOrEmpty())
