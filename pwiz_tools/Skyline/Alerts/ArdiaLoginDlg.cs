@@ -26,13 +26,13 @@ using pwiz.Skyline.Util;
 using Microsoft.Web.WebView2.Core;
 using pwiz.Skyline.Util.Extensions;
 using System.Net;
-using pwiz.Skyline.Properties;
+using pwiz.Common.Collections;
 
 namespace pwiz.Skyline.Alerts
 {
     public partial class ArdiaLoginDlg : FormEx
     {
-        public ArdiaAccount Account { get; }
+        public ArdiaAccount Account { get; private set; }
         public Func<HttpClient> AuthenticatedHttpClientFactory { get; private set; }
 
         public ArdiaLoginDlg(ArdiaAccount account)
@@ -66,12 +66,26 @@ namespace pwiz.Skyline.Alerts
 
         protected override void OnShown(EventArgs e)
         {
-            if (Settings.Default.LastArdiaLoginCookieByUsername.ContainsKey(Account.Username))
+            //if (Settings.Default.LastArdiaLoginCookieByUsername.ContainsKey(Account.Username))
+            if (!Account.BffHostCookie.IsNullOrEmpty())
             {
-                _bffCookie = new Cookie(@"Bff-Host", Settings.Default.LastArdiaLoginCookieByUsername[Account.Username]);
+                //_bffCookie = new Cookie(@"Bff-Host", Settings.Default.LastArdiaLoginCookieByUsername[Account.Username]);
+                _bffCookie = new Cookie(@"Bff-Host", Account.BffHostCookie);
                 AuthenticatedHttpClientFactory = GetFactory();
-                DialogResult = DialogResult.OK;
-                return;
+
+                // check that cookie is still valid
+                using var client = AuthenticatedHttpClientFactory();
+                var response = client.GetAsync(Account.GetFolderContentsUrl()).Result;
+                try
+                {
+                    response.EnsureSuccessStatusCode();
+                    DialogResult = DialogResult.OK;
+                    return;
+                }
+                catch (Exception)
+                {
+                    // ignored
+                }
             }
 
             InitializeWebView();
@@ -155,8 +169,9 @@ namespace pwiz.Skyline.Alerts
             if (bffCookie != null)
             {
                 _bffCookie = bffCookie.ToSystemNetCookie();
-                Settings.Default.LastArdiaLoginCookieByUsername[Account.Username] = _bffCookie.Value;
-                Settings.Default.Save();
+                //Settings.Default.LastArdiaLoginCookieByUsername[Account.Username] = _bffCookie.Value;
+                //Settings.Default.Save();
+                Account = Account.ChangeBffHostCookie(_bffCookie.Value);
                 AuthenticatedHttpClientFactory = GetFactory();
 
                 webView.CoreWebView2.Environment.BrowserProcessExited += (s, ea) => DialogResult = DialogResult.OK;
@@ -195,9 +210,13 @@ namespace pwiz.Skyline.Alerts
             if (buttonText == null)
                 return;
 
+            bool hasUsername = Account.Username?.Any() ?? false;
+            bool hasPassword = Account.Password?.Any() ?? false;
+            bool hasRole = Account.Role?.Any() ?? false;
+
             if (buttonText == @"Continue")
             {
-                if (Account.Username.Any())
+                if (hasUsername)
                 {
                     await ExecuteScriptAsync(usernameSelector + @".value=" + Account.Username.Quote());
                     await ExecuteScriptAsync(usernameSelector + triggerInputEvent);
@@ -206,12 +225,12 @@ namespace pwiz.Skyline.Alerts
                 // start listening again
                 webView.CoreWebView2.DOMContentLoaded += CoreWebView2_NavigationCompleted;
 
-                if (Account.Username.Any())
+                if (hasUsername)
                     await ExecuteScriptAsync(signinSelector + @".click()");
             }
             else if (buttonText == @"Sign In")
             {
-                if (Account.Password.Any())
+                if (hasPassword)
                 {
                     await ExecuteScriptAsync(passwordSelector + @".value=" + Account.Password.Quote());
                     await ExecuteScriptAsync(passwordSelector + triggerInputEvent);
@@ -220,12 +239,12 @@ namespace pwiz.Skyline.Alerts
                 // start listening again
                 webView.CoreWebView2.DOMContentLoaded += CoreWebView2_NavigationCompleted;
 
-                if (Account.Password.Any())
+                if (hasPassword)
                     await ExecuteScriptAsync(signinSelector + @".click()");
             }
             else if (buttonText == @"Next") // select role
             {
-                if (Account.Role.Any())
+                if (hasRole)
                 {
                     const string clickDropDownBox = "document.querySelector(\"#selectRole\").shadowRoot.querySelector(\"#roleSelection\").shadowRoot.firstChild.click()";
                     const string selectPopper = "document.querySelector(\"body > tf-popper\")";
@@ -245,7 +264,7 @@ namespace pwiz.Skyline.Alerts
                 // listening for navigation to start
                 webView.CoreWebView2.NavigationStarting += CoreWebView2_NavigationStarting;
 
-                if (Account.Role.Any())
+                if (hasRole)
                 {
                     var nextEnabled = await ExecuteScriptAsyncUntil(nextSelector + @".disabled", s => Task.FromResult(s == @"false"), 4);
                     if (nextEnabled == @"false")

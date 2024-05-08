@@ -229,8 +229,8 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             using var client = account.GetAuthenticatedHttpClient();
             string presignedUrl = GetPresignedUrl(client, StorageId);
 
-            p.ProgressStatus = p.ProgressStatus.ChangeSegments(p.ProgressStatus.Segment, Math.Max(1, p.ProgressStatus.SegmentCount) + 1);
-            p.ProgressMonitor.UpdateProgress(p.ProgressStatus);
+            p.ProgressStatus = p.ProgressStatus?.ChangeSegments(p.ProgressStatus.Segment, Math.Max(1, p.ProgressStatus.SegmentCount) + 1);
+            p.ProgressMonitor?.UpdateProgress(p.ProgressStatus);
 
             var response = client.GetAsync(presignedUrl, HttpCompletionOption.ResponseHeadersRead, openMsDataFileParams.CancellationToken).Result;
             response.EnsureSuccessStatusCode();
@@ -240,19 +240,20 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             {
                 void ProgressStream_OnUpdateProgress(object sender, ProgressEventArgs e)
                 {
-                    var newPercentComplete = (int) Math.Round(e.Progress * 100);
+                    var newPercentComplete = Math.Min(99, (int) Math.Round(e.Progress * 100));
                     if (newPercentComplete - p.ProgressStatus.PercentComplete < 1)
                         return;
                     p.ProgressStatus = p.ProgressStatus.ChangePercentComplete(newPercentComplete);
                     p.ProgressMonitor.UpdateProgress(p.ProgressStatus);
                 }
 
-                progressStream.UpdateProgress += ProgressStream_OnUpdateProgress;
+                if (p.ProgressMonitor != null)
+                    progressStream.UpdateProgress += ProgressStream_OnUpdateProgress;
                 progressStream.CopyToAsync(fileStream, 1 << 16, openMsDataFileParams.CancellationToken).Wait();
             }
 
-            p.ProgressStatus = p.ProgressStatus.NextSegment();
-            p.ProgressMonitor.UpdateProgress(p.ProgressStatus);
+            p.ProgressStatus = p.ProgressStatus?.NextSegment();
+            p.ProgressMonitor?.UpdateProgress(p.ProgressStatus);
 
             if (account.DeleteRawAfterImport)
                 return new TempMsDataFileImpl(rawFilepath, 0, LockMassParameters, p.SimAsSpectra,

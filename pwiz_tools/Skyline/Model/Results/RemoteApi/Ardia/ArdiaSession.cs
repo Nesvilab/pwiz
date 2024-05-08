@@ -46,7 +46,9 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
         private ImmutableList<ArdiaFolderObject> GetFoldersAndSequences(Uri requestUri)
         {
             using var httpClient = ArdiaAccount.GetAuthenticatedHttpClient();
-            string responseBody = httpClient.GetAsync(requestUri).Result.Content.ReadAsStringAsync().Result;
+            var response = httpClient.GetAsync(requestUri).Result;
+            response.EnsureSuccessStatusCode();
+            string responseBody = response.Content.ReadAsStringAsync().Result;
             var jsonObject = JObject.Parse(responseBody);
 
             var itemsValue = jsonObject[@"children"] as JArray;
@@ -62,7 +64,9 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
         private ImmutableList<ArdiaFileObject> GetRawFiles(Uri requestUri)
         {
             using var httpClient = ArdiaAccount.GetAuthenticatedHttpClient();
-            string responseBody = httpClient.GetAsync(requestUri).Result.Content.ReadAsStringAsync().Result;
+            var response = httpClient.GetAsync(requestUri).Result;
+            response.EnsureSuccessStatusCode();
+            string responseBody = response.Content.ReadAsStringAsync().Result;
             var jsonObject = JObject.Parse(responseBody);
 
             var itemsValue = jsonObject[@"injections"] as JArray;
@@ -76,7 +80,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
         {
             var ardiaUrl = (ArdiaUrl) parentUrl;
             ImmutableList<ArdiaFolderObject> folders;
-            if (TryGetData(GetFolderContentsUrl(ardiaUrl), out folders))
+            if (TryGetData(GetFolderContentsUrl(ardiaUrl), out folders) && folders != null)
             {
                 foreach (var folderObject in folders.OfType<ArdiaFolderObject>())
                 {
@@ -92,7 +96,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             }
 
             ImmutableList<ArdiaFileObject> files;
-            if (TryGetData(GetFolderContentsUrl(ardiaUrl), out files))
+            if (TryGetData(GetFolderContentsUrl(ardiaUrl), out files) && files != null)
             {
                 foreach (var fileObject in files.OfType<ArdiaFileObject>())
                 {

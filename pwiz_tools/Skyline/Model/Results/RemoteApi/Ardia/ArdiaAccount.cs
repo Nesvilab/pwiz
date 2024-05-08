@@ -32,6 +32,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         public string Role { get; private set; }
         public bool DeleteRawAfterImport { get; private set; }
+        public string BffHostCookie { get; private set; }
 
         public ArdiaAccount(string serverUrl, string username, string password)
         {
@@ -82,6 +83,20 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         public HttpClient GetAuthenticatedHttpClient()
         {
+            if (_authenticatedHttpClientFactory != null)
+            {
+                // Check that the factory still makes a valid client
+                using var client = _authenticatedHttpClientFactory();
+                try
+                {
+                    CheckAuthentication(client);
+                }
+                catch (Exception)
+                {
+                    _authenticatedHttpClientFactory = null;
+                }
+            }
+
             if (_authenticatedHttpClientFactory == null)
             {
                 // If RemoteAccountUserInteraction is null, some top level interface didn't set it when it should have
@@ -89,6 +104,18 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
                 _authenticatedHttpClientFactory = RemoteSession.RemoteAccountUserInteraction.UserLogin(this);
             }
             return _authenticatedHttpClientFactory();
+        }
+
+        private void CheckAuthentication(HttpClient httpClient)
+        {
+            var response = httpClient.GetAsync(GetFolderContentsUrl()).Result;
+            response.EnsureSuccessStatusCode();
+        }
+
+        // testing only
+        public void ResetAuthenticatedHttpClientFactory()
+        {
+            _authenticatedHttpClientFactory = null;
         }
 
         public override RemoteAccountType AccountType
@@ -111,6 +138,11 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
             return ChangeProp(ImClone(this), im => im.DeleteRawAfterImport = deleteAfterImport);
         }
 
+        public ArdiaAccount ChangeBffHostCookie(string bffHostCookie)
+        {
+            return ChangeProp(ImClone(this), im => im.BffHostCookie = bffHostCookie);
+        }
+
         public ArdiaUrl GetRootArdiaUrl()
         {
             return (ArdiaUrl) ArdiaUrl.Empty.ChangeServerUrl(ServerUrl).ChangeUsername(Username);
@@ -131,7 +163,10 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
 
         protected bool Equals(ArdiaAccount other)
         {
-            return base.Equals(other) && Equals(Role, other.Role) && DeleteRawAfterImport == other.DeleteRawAfterImport;
+            return base.Equals(other) &&
+                   Equals(Role, other.Role) &&
+                   DeleteRawAfterImport == other.DeleteRawAfterImport &&
+                   Equals(BffHostCookie, other.BffHostCookie);
         }
 
         public override int GetHashCode()
@@ -141,6 +176,7 @@ namespace pwiz.Skyline.Model.Results.RemoteApi.Ardia
                 int hashCode = base.GetHashCode();
                 hashCode = (hashCode * 397) ^ (Role?.GetHashCode() ?? 0);
                 hashCode = (hashCode * 397) ^ DeleteRawAfterImport.GetHashCode();
+                hashCode = (hashCode * 397) ^ (BffHostCookie?.GetHashCode() ?? 0);
                 return hashCode;
             }
         }

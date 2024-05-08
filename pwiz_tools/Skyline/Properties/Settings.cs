@@ -824,7 +824,7 @@ namespace pwiz.Skyline.Properties
             }
         }
 
-        [UserScopedSettingAttribute]
+        /*[UserScopedSettingAttribute]
         public SerializableDictionary<string, string> LastArdiaLoginCookieByUsername
         {
             get
@@ -841,7 +841,7 @@ namespace pwiz.Skyline.Properties
             {
                 this[nameof(LastArdiaLoginCookieByUsername)] = value;
             }
-        }
+        }*/
 
         public DeclusteringPotentialRegression GetDeclusterPotentialByName(string name)
         {

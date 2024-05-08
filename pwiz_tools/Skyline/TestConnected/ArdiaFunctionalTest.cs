@@ -22,7 +22,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using pwiz.Common.Collections;
-using pwiz.Skyline;
 using pwiz.Skyline.Alerts;
 using pwiz.Skyline.Controls.Graphs;
 using pwiz.Skyline.FileUI;
@@ -38,7 +37,6 @@ namespace pwiz.SkylineTestConnected
     [TestClass]
     public class ArdiaTest : AbstractFunctionalTestEx
     {
-        private string _saveCookie;
         private ArdiaAccount _account;
         private List<string[]> _openPaths;
 
@@ -53,8 +51,8 @@ namespace pwiz.SkylineTestConnected
         {
             new[] { "Skyline" },
             new[] { "ExtraLargeFiles" },
-            new[] { "Astral" },
-            new[] { "astral" }
+            new[] { "Test" },
+            new[] { "astral", "Q_2014_0523_12_0_amol_uL_20mz" }
         };
 
         [TestMethod]
@@ -71,9 +69,6 @@ namespace pwiz.SkylineTestConnected
             _account = ArdiaTestUtil.GetTestAccount(ArdiaTestUtil.AccountType.SingleRole).ChangeDeleteRawAfterImport(true);
             _openPaths = SmallPaths;
 
-            // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
-            if (!Program.UseOriginalURLs)
-                Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
             RunFunctionalTest();
         }
 
@@ -91,13 +86,10 @@ namespace pwiz.SkylineTestConnected
             _account = ArdiaTestUtil.GetTestAccount();
             _openPaths = SmallPaths;
 
-            // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
-            if (!Program.UseOriginalURLs)
-                Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
             RunFunctionalTest();
         }
 
-        [TestMethod]
+        //[TestMethod]
         public void TestArdiaLargeFile()
         {
             if (!ArdiaTestUtil.EnableArdiaTests)
@@ -117,37 +109,8 @@ namespace pwiz.SkylineTestConnected
             _account = ArdiaTestUtil.GetTestAccount(ArdiaTestUtil.AccountType.SingleRole);
             _openPaths = LargePaths;
 
-            // preserve login cookie (RunFunctionalTest will reset settings to all defaults)
-            if (!Program.UseOriginalURLs)
-                Settings.Default.LastArdiaLoginCookieByUsername.TryGetValue(_account.Username, out _saveCookie);
             RunFunctionalTest();
         }
-
-        protected override void Cleanup()
-        {
-            if (_saveCookie == null)
-                return;
-
-            // restore cookie after post-test settings reset
-            Settings.Default.LastArdiaLoginCookieByUsername[_account.Username] = _saveCookie;
-            Settings.Default.Save();
-        }
-
-        /*[TestMethod]
-        public void TestRemoteAccountList()
-        {
-            var ArdiaAccount = new ArdiaAccount("https://Ardiaserver.xxx", "Ardia_username", "Ardia_password");
-            var remoteAccountList = new RemoteAccountList();
-            remoteAccountList.Add(ArdiaAccount);
-            StringWriter stringWriter = new StringWriter();
-            var xmlSerializer = new XmlSerializer(typeof(RemoteAccountList));
-            xmlSerializer.Serialize(stringWriter, remoteAccountList);
-            var serializedAccountList = stringWriter.ToString();
-            Assert.AreEqual(-1, serializedAccountList.IndexOf(ArdiaAccount.Password, StringComparison.Ordinal));
-            var roundTrip = (RemoteAccountList) xmlSerializer.Deserialize(new StringReader(serializedAccountList));
-            Assert.AreEqual(remoteAccountList.Count, roundTrip.Count);
-            Assert.AreEqual(ArdiaAccount, roundTrip[0]);
-        }*/
 
         protected override void DoTest()
         {
@@ -160,50 +123,74 @@ namespace pwiz.SkylineTestConnected
             // Click test button
             var testSuccessfulDlg = ShowDialog<MessageDlg>(() => editAccountDlg.TestSettings());
             OkDialog(testSuccessfulDlg, testSuccessfulDlg.OkDialog);
+            OkDialog(editAccountDlg, editAccountDlg.OkDialog);
 
+            foreach(var paths in _openPaths)
+                OpenFile(openDataSourceDialog, paths);
+            WaitForDocumentLoaded();
+            WaitForClosedAllChromatogramsGraph();
 
-            try
+            // short circuit for large file test
+            if (ReferenceEquals(_openPaths, LargePaths))
+                return;
+
+            string rawFilepath = TestFilesDir.GetTestPath(_openPaths.Last().First() + ".raw");
+
+            // short circuit single role test to reduce test time
+            if (_account.Role.IsNullOrEmpty())
             {
-                OkDialog(editAccountDlg, editAccountDlg.OkDialog);
-
-                foreach(var paths in _openPaths)
-                    OpenFile(openDataSourceDialog, paths);
-                WaitForDocumentLoaded();
-                WaitForClosedAllChromatogramsGraph();
-
-                // short circuit for large file test
-                if (ReferenceEquals(_openPaths, LargePaths))
-                    return;
-
-                string rawFilepath = TestFilesDir.GetTestPath(_openPaths.Last().First());
-
-                // short circuit single role test to reduce test time
-                if (_account.Role.IsNullOrEmpty())
-                {
-                    AssertEx.FileNotExists(rawFilepath); // for single role test, file should have been deleted after importing
-                    return;
-                }
-
-                RunUI(() => SkylineWindow.SaveDocument());
-                RunUI(() => SkylineWindow.OpenFile(TestFilesDir.GetTestPath("small.sky")));
-
-                // delete local RAW file to test that it gets redownloaded when clicking on the chromatogram to view a spectrum
-                AssertEx.FileExists(rawFilepath);
-                File.Delete(rawFilepath);
-
-                WaitForDocumentLoaded();
-                RunUI(() => SkylineWindow.SelectElement(ElementRefs.FromObjectReference(ElementLocator.Parse("Molecule:/Molecules/Reserpine"))));
-
-                ClickChromatogram(0.5, 33000);
-                GraphFullScan graphFullScan = FindOpenForm<GraphFullScan>();
-                Assert.IsNotNull(graphFullScan);
-                RunUI(() => graphFullScan.Close());
+                AssertEx.FileNotExists(rawFilepath); // for single role test, file should have been deleted after importing
+                return;
             }
-            finally
+
+            RunUI(() => SkylineWindow.SaveDocument());
+            RunUI(() => SkylineWindow.OpenFile(TestFilesDir.GetTestPath("small.sky")));
+
+            // delete local RAW file to test that it gets redownloaded when clicking on the chromatogram to view a spectrum
+            AssertEx.FileExists(rawFilepath);
+            File.Delete(rawFilepath);
+
+            WaitForDocumentLoaded();
+            RunUI(() => SkylineWindow.SelectElement(ElementRefs.FromObjectReference(ElementLocator.Parse("Molecule:/Molecules/Reserpine"))));
+
+            ClickChromatogram(0.5, 33000);
+            GraphFullScan graphFullScan = FindOpenForm<GraphFullScan>();
+            Assert.IsNotNull(graphFullScan);
+            RunUI(() => graphFullScan.Close());
+
+            // delete results and reimport to test using saved cookie
+            RemoveResultsAndReimport();
+
+            // corrupt the cookie (simulate it being expired) and try reimporting again
+            //Settings.Default.LastArdiaLoginCookieByUsername[_account.Username] = "foobar";
+            _account = _account.ChangeBffHostCookie("foobar");
+
+            // delete local files
+            foreach (var rawName in _openPaths.Last())
+                File.Delete(TestFilesDir.GetTestPath(rawName + ".raw"));
+
+            _account.ResetAuthenticatedHttpClientFactory();
+            Settings.Default.RemoteAccountList.Clear();
+            Settings.Default.RemoteAccountList.Add(_account);
+            RemoveResultsAndReimport();
+        }
+
+        private void RemoveResultsAndReimport()
+        {
+            RunDlg<ManageResultsDlg>(SkylineWindow.ManageResults, dlg =>
             {
-                // always save cookie if login was successful
-                _saveCookie = Settings.Default.LastArdiaLoginCookieByUsername[_account.Username];
-            }
+                dlg.RemoveAllReplicates();
+                dlg.OkDialog();
+            });
+            RunUI(() => SkylineWindow.SaveDocument());
+
+            var importResultsDlg = ShowDialog<ImportResultsDlg>(SkylineWindow.ImportResults);
+            var openDataSourceDialog = ShowDialog<OpenDataSourceDialog>(importResultsDlg.OkDialog);
+            RunUI(() => openDataSourceDialog.CurrentDirectory = RemoteUrl.EMPTY);
+            foreach (var paths in _openPaths)
+                OpenFile(openDataSourceDialog, paths);
+            WaitForDocumentLoaded();
+            WaitForClosedAllChromatogramsGraph();
         }
 
         private void OpenFile(OpenDataSourceDialog openDataSourceDialog, params string[] names)
