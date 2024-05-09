@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using pwiz.Common.SystemUtil;
 using pwiz.ProteowizardWrapper;
 
@@ -38,7 +39,7 @@ namespace pwiz.Skyline.Model.Results
 
         public MsDataFileImpl OpenLocalFile(string path, int sampleIndex, LockMassParameters lockMassParameters)
         {
-            return new MsDataFileImpl(path, sampleIndex: sampleIndex, lockmassParameters: lockMassParameters,
+            return new MsDataFileImpl(path, sampleIndex: Math.Max(sampleIndex, 0), lockmassParameters: lockMassParameters,
                 simAsSpectra: SimAsSpectra, requireVendorCentroidedMS1: CentroidMs1,
                 requireVendorCentroidedMS2: CentroidMs2, preferOnlyMsLevel: PreferOnlyMs1 ? 1 : 0);
         }
