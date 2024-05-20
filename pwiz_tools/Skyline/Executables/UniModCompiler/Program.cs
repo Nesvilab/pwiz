@@ -64,7 +64,7 @@ namespace UniModCompiler
         private const string UNIMOD_XML = "unimod.xml";
         private const string PROTEIN_PILOT_XML = "ProteinPilot.DataDictionary.xml";
 
-        static void Main()
+        static void Main(string[] args)
         {
             try
             {
@@ -132,44 +132,88 @@ namespace UniModCompiler
                 _impossibleMods = new List<string>();
 
                 // Writing the output file.
-                var writer = new StreamWriter(Path.Combine(PROJECT_PATH, @"..\..\Model\DocSettings\UniModData.cs"));
-                var templateStream =
-                    typeof (Program).Assembly.GetManifestResourceStream("UniModCompiler.UniModTemplate.cs");
-                if (templateStream == null)
-                    throw new IOException("Failed to open template");
-                var templateReader = new StreamReader(templateStream);
-                string templateLine;
-                while ((templateLine = templateReader.ReadLine()) != null)
+                if (args.Length == 0 || args[0] != "tsv")
                 {
-                    if (!templateLine.Contains(@"// ADD MODS"))
-                        writer.WriteLine(templateLine);
-                    else
+                    var writer = new StreamWriter(Path.Combine(PROJECT_PATH, @"../../Model/DocSettings/UniModData.cs"));
+                    var templateStream =
+                        typeof (Program).Assembly.GetManifestResourceStream("UniModCompiler.UniModTemplate.cs");
+                    if (templateStream == null)
+                        throw new IOException("Failed to open template");
+                    var templateReader = new StreamReader(templateStream);
+                    string templateLine;
+                    while ((templateLine = templateReader.ReadLine()) != null)
                     {
-                        WriteMods(writer, false, false);
-                        WriteMods(writer, false, true);
-                        WriteMods(writer, true, false);
-                        WriteMods(writer, true, true);
+                        if (!templateLine.Contains(@"// ADD MODS"))
+                            writer.WriteLine(templateLine);
+                        else
+                        {
+                            WriteMods(writer, false, false);
+                            WriteMods(writer, false, true);
+                            WriteMods(writer, true, false);
+                            WriteMods(writer, true, true);
+                        }
                     }
-                }
 
-                foreach (string impossibleMod in _impossibleMods)
-                {
-                    writer.WriteLine("//Impossible Modification: " + impossibleMod);
-                }
-                foreach (Mod listedMod in _listedMods)
-                {
-                    writer.WriteLine("//Unable to match: " + listedMod.Name);
-                }
-                foreach (Mod listedMod in _listedHiddenMods)
-                {
-                    writer.WriteLine("//Unable to match: " + listedMod.Name);
-                }
-                foreach (var unusedSciex in _dictModNameToThreeLetterCode.Where(p => !p.Value.Used).OrderBy(p => p.Key))
-                {
-                    writer.WriteLine("//Unused code: {0} = {1}", unusedSciex.Key, unusedSciex.Value.ThreeLetterCode);
-                }
+                    foreach (string impossibleMod in _impossibleMods)
+                    {
+                        writer.WriteLine("//Impossible Modification: " + impossibleMod);
+                    }
+                    foreach (Mod listedMod in _listedMods)
+                    {
+                        writer.WriteLine("//Unable to match: " + listedMod.Name);
+                    }
+                    foreach (Mod listedMod in _listedHiddenMods)
+                    {
+                        writer.WriteLine("//Unable to match: " + listedMod.Name);
+                    }
+                    foreach (var unusedSciex in _dictModNameToThreeLetterCode.Where(p => !p.Value.Used).OrderBy(p => p.Key))
+                    {
+                        writer.WriteLine("//Unused code: {0} = {1}", unusedSciex.Key, unusedSciex.Value.ThreeLetterCode);
+                    }
 
-                writer.Close();
+                    writer.Close();
+                }
+                else if (args[0] == "tsv")
+                {
+                    var writer = new StreamWriter(Path.Combine(PROJECT_PATH, @"../../Model/DocSettings/UniModData.tsv"));
+                    var templateStream =
+                        typeof (Program).Assembly.GetManifestResourceStream("UniModCompiler.UniModTemplate.tsv");
+                    if (templateStream == null)
+                        throw new IOException("Failed to open template");
+                    var templateReader = new StreamReader(templateStream);
+                    string templateLine;
+                    while ((templateLine = templateReader.ReadLine()) != null)
+                    {
+                        if (!templateLine.Contains(@"// ADD MODS"))
+                            writer.WriteLine(templateLine);
+                        else
+                        {
+                            WriteModsTsv(writer, false, false);
+                            WriteModsTsv(writer, false, true);
+                            WriteModsTsv(writer, true, false);
+                            WriteModsTsv(writer, true, true);
+                        }
+                    }
+
+                    foreach (string impossibleMod in _impossibleMods)
+                    {
+                        writer.WriteLine("#Impossible Modification: " + impossibleMod);
+                    }
+                    foreach (Mod listedMod in _listedMods)
+                    {
+                        writer.WriteLine("#Unable to match: " + listedMod.Name);
+                    }
+                    foreach (Mod listedMod in _listedHiddenMods)
+                    {
+                        writer.WriteLine("#Unable to match: " + listedMod.Name);
+                    }
+                    foreach (var unusedSciex in _dictModNameToThreeLetterCode.Where(p => !p.Value.Used).OrderBy(p => p.Key))
+                    {
+                        writer.WriteLine("#Unused code: {0} = {1}", unusedSciex.Key, unusedSciex.Value.ThreeLetterCode);
+                    }
+
+                    writer.Close();
+                }
             }
             catch(Exception x)
             {
@@ -495,6 +539,139 @@ namespace UniModCompiler
                 writer.WriteLine("            },");
 
                 
+                if (hidden)
+                    _listedHiddenMods.Remove(mod);
+                else
+                    _listedMods.Remove(mod);
+            }
+        }
+
+        private static void WriteModsTsv(StreamWriter writer, bool hidden, bool isotopic)
+        {
+            var dict = isotopic ? _dictIsotopeMods : _dictStructuralMods;
+
+            IList<Mod> listedModsCopy = hidden ? new List<Mod>(_listedHiddenMods) : new List<Mod>(_listedMods);
+            // Look for the listed mods in the given dictionary.
+            foreach (Mod mod in listedModsCopy)
+            {
+                mod_t dictMod;
+                if (!dict.TryGetValue(mod.Title, out dictMod))
+                    continue;
+
+                // For each AA in the listed modification, make sure the dictionary mod contains it.
+                bool foundAllAAs = true;
+                List<String> losses = null;
+                List<String> aaLosses = null;
+                foreach (char aa in mod.AAs)
+                {
+                    foundAllAAs = foundAllAAs && ContainsSite(dictMod, aa.ToString(CultureInfo.InvariantCulture), out aaLosses);
+                    if (losses == null)
+                        losses = aaLosses;
+                    else if (!ListEquals(losses, aaLosses))
+                        foundAllAAs = false;
+                }
+                // Also check to make sure the dictionary mod contains the terminal, if any.
+                foundAllAAs = foundAllAAs &&
+                    (mod.Terminus == null || !mod.Terminus.Equals(Terminal.C) || ContainsSite(dictMod, "C-term", out aaLosses));
+                foundAllAAs = foundAllAAs &&
+                    (mod.Terminus == null || !mod.Terminus.Equals(Terminal.N) || ContainsSite(dictMod, "N-term", out aaLosses));
+                if (losses == null)
+                    losses = aaLosses;
+                else if (!ListEquals(losses, aaLosses))
+                    foundAllAAs = false;
+
+                // If the dictionary mod does not contain all desired AAs, continue.
+                if (!foundAllAAs)
+                    continue;
+
+                // Build string for fragment loss.
+                string lossesStr = "";
+                if(losses != null && losses.Count > 0)
+                {
+                    lossesStr = String.Join(",", losses);
+                }
+
+                string skylineFormula = BuildFormula(dictMod.delta.element);
+                if(skylineFormula.Length == 0)
+                    continue;
+                bool hasLabelAtoms = isotopic && mod.AAs.Length > 0;
+                string labelAtoms = "None";
+                if (hasLabelAtoms && !CheckLabelAtoms(dictMod, mod.AAs, out labelAtoms))
+                {
+                    _impossibleMods.Add(mod.Name);
+                    if (hidden)
+                        _listedHiddenMods.Remove(mod);
+                    else
+                        _listedMods.Remove(mod);
+                    continue;
+                }
+                labelAtoms = labelAtoms.Replace("LabelAtoms.", "");
+
+                ThreeLetterCodeUsed threeLetterCode;
+                var nameKey = mod.Name.Substring(0, mod.Name.LastIndexOf("(", StringComparison.Ordinal)).Trim().ToLower();
+                _dictModNameToThreeLetterCode.TryGetValue(nameKey, out threeLetterCode);
+
+                writer.Write("{0}\t", mod.Name);
+                if (mod.AAs.Length > 0)
+                {
+                    writer.Write("{0}\t", BuildAaString(mod.AAs));
+                }
+                else
+                {
+                    writer.Write("\t");
+                }
+
+                if (mod.Terminus != null)
+                {
+                    writer.Write("{0}\t", mod.Terminus);
+                }
+                else
+                {
+                    writer.Write("\t");
+                }
+
+
+                writer.Write("{0}\t", labelAtoms);
+                if (Equals(labelAtoms, "None"))
+                {
+                    writer.Write("{0}\t", BuildFormula(dictMod.delta.element));
+                }
+                else
+                {
+                    writer.Write("\t");
+                }
+
+                writer.Write("{0}\t", lossesStr);
+                writer.Write("{0}\t{1}\t{2}\t", dictMod.record_id, dictMod.delta.mono_mass, (!isotopic).ToString(CultureInfo.InvariantCulture).ToLower());
+                if (threeLetterCode != null)
+                {
+                    writer.Write("{0}\t", threeLetterCode.ThreeLetterCode);
+                    threeLetterCode.Used = true;
+                    if (mod.Terminus.HasValue)
+                    {
+                        nameKey = "Terminal " + nameKey;
+                        ThreeLetterCodeUsed threeLetterCodeTerm;
+                        if (_dictModNameToThreeLetterCode.TryGetValue(nameKey, out threeLetterCodeTerm))
+                        {
+                            if (!Equals(threeLetterCode.ThreeLetterCode, threeLetterCodeTerm.ThreeLetterCode))
+                            {
+                                Console.Error.WriteLine("Mismatched three letter codes {0} and terminal {1}",
+                                    threeLetterCode.ThreeLetterCode, threeLetterCodeTerm.ThreeLetterCode);
+                            }
+                            else
+                            {
+                                threeLetterCodeTerm.Used = true;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    writer.Write("\t");
+                }
+
+                writer.WriteLine("{0}\tnon_hardcoded", hidden.ToString().ToLower());
+
                 if (hidden)
                     _listedHiddenMods.Remove(mod);
                 else

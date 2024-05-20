@@ -1,0 +1,13 @@
+name	AAs	terminus	labelAtoms	formula	losses	id	monoMass	structural	shortName	hidden	type
+Carbamidomethyl (C)	C		None	H3C2NO		4	57.021464	TRUE	CAM	FALSE	default
+Ammonia Loss (K, N, Q, R)	K, N, Q, R		None		NH3		-17.026549	TRUE		FALSE	hardcoded
+Water Loss (D, E, S, T)	D, E, S, T		None		H2O		-18.010565	TRUE		FALSE	hardcoded
+Label:15N			N15				1.003354838	FALSE		FALSE	hardcoded
+Label:13C			C13				1.003354838	FALSE		FALSE	hardcoded
+Label:13C15N			C13N15				2.006709676	FALSE		FALSE	hardcoded
+Label:13C(6)15N(2) (C-term K)	K	C	C13|N15				8.014199	FALSE		FALSE	hardcoded
+Label:13C(6)15N(4) (C-term R)	R	C	C13|N15				10.008269	FALSE		FALSE	hardcoded
+Label:13C(6) (C-term K)	K	C	C13				6.020129	FALSE		FALSE	hardcoded
+Label:13C(6) (C-term R)	R	C	C13				6.020129	FALSE		FALSE	hardcoded
+// ADD MODS
+
